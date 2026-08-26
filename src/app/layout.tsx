@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { AuthProvider } from "@/lib/auth/auth-provider";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -47,7 +48,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${archivo.variable} ${plexSans.variable} ${plexMono.variable} ${dseg7.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-body">{children}</body>
+      <body className="min-h-full flex flex-col font-body">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
