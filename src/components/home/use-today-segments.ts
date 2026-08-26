@@ -46,11 +46,15 @@ export function useTodaySegments(areaId: string | null | undefined, refreshToken
       const now = new Date();
       const todayStart = startOfToday(now);
 
+      // Flagged logs are excluded here for the same reason the derivation job
+      // skips them (supabase/migrations/0003): a log a moderator has marked as
+      // suspect must not draw an hour the uptime figures don't believe in.
       const [beforeToday, today] = await Promise.all([
         supabase
           .from("power_logs")
           .select("status, logged_at")
           .eq("area_id", areaId)
+          .eq("is_flagged", false)
           .lt("logged_at", todayStart.toISOString())
           .order("logged_at", { ascending: false })
           .limit(1)
@@ -59,6 +63,7 @@ export function useTodaySegments(areaId: string | null | undefined, refreshToken
           .from("power_logs")
           .select("status, logged_at")
           .eq("area_id", areaId)
+          .eq("is_flagged", false)
           .gte("logged_at", todayStart.toISOString())
           .order("logged_at", { ascending: true }),
       ]);

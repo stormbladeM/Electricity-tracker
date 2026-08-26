@@ -1,0 +1,29 @@
+/*
+ * Chart entry: 200ms fade with a subtle rise, no bounce
+ * (docs/design-system.md section 6). Motion in this product belongs to power
+ * restoration; this is just enough to stop numbers appearing out of nowhere
+ * when a fetch lands.
+ *
+ * The component already withholds the class when the viewer prefers reduced
+ * motion; the media query is the backstop, matching the ribbon's surge.
+ */
+.enter {
+  animation: chart-enter 200ms ease-out both;
+}
+
+@keyframes chart-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter {
+    animation: none;
+  }
+}

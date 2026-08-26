@@ -1,13 +1,19 @@
 /**
- * Turns real power_logs rows for one area into a day of ribbon segments —
- * the live counterpart to mock-data.ts's generators. Pure and Supabase-free
- * so the fetch (src/components/home/use-today-segments.ts) stays a thin
- * wrapper and this stays reusable by any future "day" view (M3/M4).
+ * Turns real power_logs rows for one area into ribbon segments — the live
+ * counterpart to mock-data.ts's generators. Pure and Supabase-free so the
+ * fetches (src/components/home/use-today-segments.ts, the personal dashboard's
+ * use-window-logs.ts) stay thin wrappers and this stays reusable by any day,
+ * week or month view.
+ *
+ * `segmentsFromLogs` builds one day; `segmentsByDay` builds a run of days from
+ * a single flat list of logs, carrying status across midnight. A week stack and
+ * a month barcode are the same function with a longer list of days.
  */
 import { slicedSegment } from "./segment";
 import type { RibbonSegment, SegmentSlice } from "./types";
 
 const MINUTES_PER_HOUR = 60;
+const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
 
 export type LoggedPoint = {
   loggedAt: Date;
@@ -22,6 +28,27 @@ function minutesInto(date: Date): number {
 
 function hourStart(day: Date, hour: number): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour);
+}
+
+/** Local midnight of the calendar day `date` falls on. */
+export function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
+ * How much of `day` has actually happened by `now`, in minutes.
+ *
+ * The distinction matters once the ribbon shows days other than today: a past
+ * day is knowable end to end, today stops at the current minute, and a day
+ * still ahead is entirely unknown. Without this a 3am hour last Tuesday would
+ * render as "not known yet" simply because it is 2am right now.
+ */
+function knownMinutes(day: Date, now: Date): number {
+  const dayStart = startOfLocalDay(day).getTime();
+  const todayStart = startOfLocalDay(now).getTime();
+  if (dayStart > todayStart) return 0;
+  if (dayStart < todayStart) return MINUTES_PER_DAY;
+  return minutesInto(now);
 }
 
 /** State at `minute` from the last point at or before it — null if nothing was known yet. */
@@ -57,7 +84,7 @@ export type SegmentsFromLogsOptions = {
   day: Date;
   /** Current time. Hours at or after this render as unknown, not off. */
   now: Date;
-  /** This area's logs from local midnight of `day` onward, ascending. */
+  /** This area's logs on `day` itself, ascending. */
   todaysLogs: LoggedPoint[];
   /** Status carried in from before local midnight, or null if unknown. */
   statusBeforeToday: "on" | "off" | null;
@@ -77,7 +104,7 @@ export function segmentsFromLogs({
   const points: Point[] =
     statusBeforeToday !== null ? [{ minute: 0, state: statusBeforeToday }, ...events] : events;
 
-  const knownUntilMinute = minutesInto(now);
+  const knownUntilMinute = knownMinutes(day, now);
 
   return Array.from({ length: 24 }, (_, hour) => {
     const start = hourStart(day, hour);
@@ -97,5 +124,64 @@ export function segmentsFromLogs({
 
     const logCount = events.filter((e) => e.minute >= fromMinute && e.minute < knownTo).length;
     return slicedSegment(start, end, slices, logCount);
+  });
+}
+
+/** One day's worth of ribbon, ready to stack. */
+export type DayRibbon = {
+  /** Local midnight of the day this row covers — also its React key. */
+  day: Date;
+  segments: RibbonSegment[];
+};
+
+export type SegmentsByDayOptions = {
+  /** The days to build, ascending. Any Date within each day works. */
+  days: Date[];
+  now: Date;
+  /** Every log in the whole span, ascending. Bucketed here, per local day. */
+  logs: LoggedPoint[];
+  /** Status carried in from before the first day, or null if unknown. */
+  statusBeforeFirstDay: "on" | "off" | null;
+};
+
+/**
+ * A stack of daily ribbons from one flat list of logs — the week view and the
+ * month barcode.
+ *
+ * Status carries across midnight: a day with no logs of its own inherits the
+ * last known state rather than going blank, which is what makes a multi-day
+ * outage read as one continuous dark run instead of one dark day followed by
+ * hatching.
+ */
+export function segmentsByDay({
+  days,
+  now,
+  logs,
+  statusBeforeFirstDay,
+}: SegmentsByDayOptions): DayRibbon[] {
+  const byDay = new Map<string, LoggedPoint[]>();
+  for (const log of logs) {
+    const key = startOfLocalDay(log.loggedAt).toDateString();
+    const bucket = byDay.get(key);
+    if (bucket) bucket.push(log);
+    else byDay.set(key, [log]);
+  }
+
+  let carried = statusBeforeFirstDay;
+
+  return days.map((date) => {
+    const day = startOfLocalDay(date);
+    const todaysLogs = byDay.get(day.toDateString()) ?? [];
+    const segments = segmentsFromLogs({
+      day,
+      now,
+      todaysLogs,
+      statusBeforeToday: carried,
+    });
+
+    const last = todaysLogs[todaysLogs.length - 1];
+    if (last) carried = last.status;
+
+    return { day, segments };
   });
 }

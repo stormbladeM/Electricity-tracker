@@ -8,12 +8,12 @@ import {
   mockWeek,
 } from "@/components/supply-ribbon/mock-data";
 import { formatDate } from "@/components/supply-ribbon/format";
+import { RibbonLegend } from "@/components/supply-ribbon/ribbon-legend";
 import { RibbonRow } from "@/components/supply-ribbon/ribbon-row";
 import { SupplyRibbon } from "@/components/supply-ribbon/supply-ribbon";
 import { SupplyRibbonSkeleton } from "@/components/supply-ribbon/supply-ribbon-skeleton";
 import { PreviewSection } from "./preview-section";
 import { RestorationDemo } from "./restoration-demo";
-import { StateLegend } from "./state-legend";
 
 export const metadata: Metadata = {
   title: "Supply ribbon — component preview",
@@ -48,7 +48,7 @@ export default function SupplyRibbonPreviewPage() {
         title="Segment states"
         note="Off is dark, never red. The two hatches say “we can’t tell you”, in opposite directions so they never read as a colour difference alone."
       >
-        <StateLegend />
+        <RibbonLegend />
       </PreviewSection>
 
       <PreviewSection

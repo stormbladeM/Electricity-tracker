@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ChartColumn } from "lucide-react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useProfile } from "@/lib/auth/use-profile";
 import { useLatestLog } from "@/lib/hooks/use-latest-log";
@@ -74,6 +75,15 @@ export function HomeScreen() {
           latestLog={latestLog}
           onLogged={handleLogged}
         />
+
+        {/* Lucide, unthemed: a chart icon stays a chart icon. */}
+        <Link
+          href="/dashboard"
+          className="flex w-fit items-center gap-2 rounded text-14 text-primary-text"
+        >
+          <ChartColumn aria-hidden="true" size={16} strokeWidth={1.5} />
+          Your dashboard
+        </Link>
       </div>
     </main>
   );

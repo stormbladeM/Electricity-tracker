@@ -1,7 +1,15 @@
-import { SupplyRibbon } from "@/components/supply-ribbon/supply-ribbon";
-import { flatSegment } from "@/components/supply-ribbon/segment";
-import type { SegmentState } from "@/components/supply-ribbon/types";
+import { SupplyRibbon } from "./supply-ribbon";
+import { flatSegment } from "./segment";
+import type { SegmentState } from "./types";
 
+/**
+ * The four segment states side by side, each drawn by the ribbon itself rather
+ * than by swatches — so the legend can never drift from what the ribbon paints.
+ *
+ * Lives here, next to the ribbon, because every surface that shows a ribbon to
+ * someone who hasn't seen one before needs it: the component preview, the
+ * personal dashboard, and the public area pages later.
+ */
 const SAMPLE_START = new Date(2026, 7, 26, 9);
 const SAMPLE_END = new Date(2026, 7, 26, 10);
 
@@ -12,8 +20,12 @@ const STATES: { state: SegmentState; label: string; meaning: string }[] = [
   { state: "unknown", label: "Unknown", meaning: "Still in the future" },
 ];
 
-/** The four segment states side by side, each drawn by the ribbon itself. */
-export function StateLegend() {
+export function RibbonLegend({
+  /** Drop the explanations where space is tight; the labels stay. */
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   return (
     <ul className="flex flex-wrap gap-x-6 gap-y-3">
       {STATES.map(({ state, label, meaning }) => (
@@ -35,7 +47,7 @@ export function StateLegend() {
             />
           </span>
           <span className="text-12 text-text">{label}</span>
-          <span className="text-12 text-text-muted">{meaning}</span>
+          {!compact && <span className="text-12 text-text-muted">{meaning}</span>}
         </li>
       ))}
     </ul>
