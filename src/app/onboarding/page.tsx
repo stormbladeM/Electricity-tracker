@@ -1,6 +1,11 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { LocationPicker } from "@/components/location-picker/location-picker";
 
 export default function OnboardingPage() {
+  const router = useRouter();
+
   return (
     <main className="flex-1 flex flex-col justify-center gap-8 bg-base px-6 py-12">
       <div className="mx-auto w-full max-w-sm">
@@ -9,7 +14,7 @@ export default function OnboardingPage() {
           Pick your state and LGA so we can show you the right power status.
         </p>
         <div className="mt-6">
-          <LocationPicker />
+          <LocationPicker onComplete={() => router.push("/")} />
         </div>
       </div>
     </main>
