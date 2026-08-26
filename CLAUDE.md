@@ -30,6 +30,14 @@ Built as a portfolio flagship. Quality of the dashboard and admin tooling matter
 
 ---
 
+## Code conventions
+
+- Keep components small and single-purpose. If a component's body is hard to scan in one pass, split it — extract a subcomponent or a hook rather than growing the file.
+- Favor readable, reusable components over clever ones. Shared UI (buttons, cards, badges, the ribbon) lives in its own file and gets reused, not copy-pasted per screen.
+- Keep the folder structure organized and predictable: components grouped by domain/feature (e.g. `ribbon/`, `location-picker/`, `dashboard/`), not dumped flat into one `components/` folder. Colocate a component's own hooks/types/styles with it when they're not shared elsewhere.
+
+---
+
 ## Design tokens
 
 ### Surfaces
