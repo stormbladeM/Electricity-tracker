@@ -13,8 +13,10 @@
 --     moderators/admins get elevated policies.
 --
 -- Ordering note: the SECURITY DEFINER helpers in section 4 are what every
--- policy calls, so they are defined as early as possible — immediately after
--- the profiles table they read, and long before section 11 uses them.
+-- policy calls, so they are defined right after the profiles table they read
+-- (section 3) and long before section 11 uses them. They cannot come before
+-- profiles exists: Postgres validates table references inside a `language
+-- sql` function body at CREATE FUNCTION time, unlike plpgsql.
 --
 -- Written to be re-runnable: types, tables, indexes, functions, triggers and
 -- policies are all guarded or replaced rather than blindly created.
