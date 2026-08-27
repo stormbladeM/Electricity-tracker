@@ -462,6 +462,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_growth_series: {
+        Args: { p_days?: number }
+        Returns: {
+          contributors: number
+          day: string
+          faults: number
+          logs: number
+          new_users: number
+        }[]
+      }
+      admin_overview_stats: {
+        Args: { p_days?: number }
+        Returns: {
+          audit_actions_window: number
+          banned_users: number
+          contributors_total: number
+          contributors_window: number
+          faults_open: number
+          faults_resolved_window: number
+          faults_untriaged: number
+          faults_window: number
+          flagged_logs_open: number
+          lgas_total: number
+          lgas_tracked: number
+          logs_prev_window: number
+          logs_total: number
+          logs_window: number
+          median_resolution_hours: number
+          national_uptime_percent: number
+          new_users_window: number
+          users_total: number
+          window_days: number
+        }[]
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
