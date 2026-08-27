@@ -10,7 +10,13 @@
  * content; only admins edit the geographic reference data every log is
  * denormalized against.
  */
-import { LayoutDashboard, ShieldCheck, TriangleAlert, type LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Map,
+  ShieldCheck,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 
 export type AdminNavItem = {
   href: string;
@@ -39,6 +45,12 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     label: "Faults",
     blurb: "Triage queue, status changes and resolution metrics.",
     icon: TriangleAlert,
+  },
+  {
+    href: "/admin/coverage",
+    label: "Coverage",
+    blurb: "Which LGAs have enough reporting to be trusted, and which are silent.",
+    icon: Map,
   },
 ];
 

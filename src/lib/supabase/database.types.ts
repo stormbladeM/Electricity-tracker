@@ -525,6 +525,20 @@ export type Database = {
           new_users: number
         }[]
       }
+      admin_lga_coverage: {
+        Args: { p_days?: number }
+        Returns: {
+          contributor_count: number
+          fault_count: number
+          last_log_at: string
+          lga_id: string
+          lga_name: string
+          lga_slug: string
+          log_count: number
+          state_id: string
+          state_name: string
+        }[]
+      }
       admin_overview_stats: {
         Args: { p_days?: number }
         Returns: {
