@@ -16,6 +16,8 @@ import { AREA_PERIOD_PHRASES, type AreaPeriod } from "./area-period";
 import { AreaPeriodSelector } from "./area-period-selector";
 import { AreaRibbonGrid, AreaRibbonGridSkeleton } from "./area-ribbon-grid";
 import { ConfidenceBadge } from "./confidence-badge";
+import { hourOfDayRows } from "./hour-of-day";
+import { HourOfDayHeatmap, HourOfDayHeatmapSkeleton } from "./hour-of-day-heatmap";
 import { MeterReadout, MeterReadoutSkeleton } from "./meter-readout";
 import { ScopeSelector } from "./scope-selector";
 import { useAreaScope } from "./use-area-scope";
@@ -37,9 +39,9 @@ const RIBBON_HEADINGS: Record<AreaPeriod, string> = {
  * logs, which is what the personal dashboard shows.
  *
  * It carries the seven-segment uptime readout, the graded confidence badge,
- * the longest-outage / outage-count stats, and the ribbon at four scales —
- * the 30-day barcode and the 12-month average grid included. The hour-of-day
- * heatmap and the LGA comparison land in the following passes.
+ * the longest-outage / outage-count stats, the ribbon at four scales (the
+ * 30-day barcode and the 12-month average grid included) and the hour-of-day
+ * heatmap. The LGA comparison and national ranking land in the next pass.
  */
 export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Scope }) {
   const { isLoading: isAuthLoading } = useAuth();
@@ -50,12 +52,21 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
   const areaStats = useAreaStats(areaIds, period);
   const ribbon = useAreaWindowLogs(areaIds, period);
 
+  // "When is power usually on" is a longer-run question than the period
+  // toggle, so the heatmap always reads a fixed 30-day window of its own.
+  const heatmap = useAreaWindowLogs(areaIds, "monthly");
+
   const months = useMemo(
     () =>
       period === "yearly" && ribbon.data
         ? monthlyAvailabilityRows(ribbon.data.days)
         : [],
     [period, ribbon.data],
+  );
+
+  const weekdayRows = useMemo(
+    () => (heatmap.data ? hourOfDayRows(heatmap.data.days) : []),
+    [heatmap.data],
   );
 
   const isAccountLoading = isAuthLoading || isProfileLoading;
@@ -211,6 +222,31 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
                 <RibbonLegend compact />
               </div>
             </>
+          )}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-18 font-medium text-text">
+          When power is usually on
+        </h2>
+        <p className="text-14 text-text-muted">
+          Each weekday, averaged hour by hour over the last 30 days.
+        </p>
+
+        <div className="rounded border border-hairline bg-surface p-4">
+          {error || heatmap.error ? (
+            <p className="text-14 text-fault">{error ?? heatmap.error}</p>
+          ) : heatmap.isLoading || !heatmap.data ? (
+            <HourOfDayHeatmapSkeleton />
+          ) : heatmap.data.coverage.hasAnyKnowledge ? (
+            <ChartEntry>
+              <HourOfDayHeatmap rows={weekdayRows} areaName={scopeName} />
+            </ChartEntry>
+          ) : (
+            <p className="text-14 text-text-muted">
+              Not enough logs yet to show a weekly pattern.
+            </p>
           )}
         </div>
       </section>

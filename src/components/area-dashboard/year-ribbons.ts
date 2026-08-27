@@ -3,18 +3,18 @@
  * rows, each a compressed monthly average").
  *
  * Each row is one calendar month; each of its 24 segments is that month's
- * average availability at that hour of the day, across every day and every
- * in-scope area that reported. It reads as a heat gradient down the day —
- * where a month's power tended to be, hour by hour — rather than a timeline.
+ * average availability at that hour of the day. It reads as a heat gradient
+ * down the day — where a month's power tended to be, hour by hour — rather
+ * than a timeline.
  *
  * Pure and Supabase-free: it folds the daily ribbons that
  * `useAreaWindowLogs` already built over the 365-day window, so the picture
  * answers to exactly the same logs as the shorter views.
  */
-import { slicedSegment } from "@/components/supply-ribbon/segment";
 import { formatMonthName } from "@/components/supply-ribbon/format";
 import type { DayRibbon } from "@/components/supply-ribbon/segments-from-logs";
-import type { RibbonSegment, SegmentSlice } from "@/components/supply-ribbon/types";
+import type { RibbonSegment } from "@/components/supply-ribbon/types";
+import { foldHourly } from "./availability-fold";
 
 export type MonthRibbon = {
   /** First of the month — the row's identity and the key. */
@@ -24,24 +24,6 @@ export type MonthRibbon = {
   /** 24 hourly segments, each an average across the month. */
   segments: RibbonSegment[];
 };
-
-const HOURS_PER_DAY = 24;
-
-/** Share of the hour that was on, over the part of it anyone knew — null if
- *  the hour was entirely unknown or unlogged that day. */
-function hourAvailability(segment: RibbonSegment): number | null {
-  let known = 0;
-  let on = 0;
-  for (const slice of segment.slices) {
-    if (slice.state === "on") {
-      known += slice.fraction;
-      on += slice.fraction;
-    } else if (slice.state === "off") {
-      known += slice.fraction;
-    }
-  }
-  return known > 0 ? on / known : null;
-}
 
 function monthKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}`;
@@ -72,42 +54,13 @@ export function monthlyAvailabilityRows(days: DayRibbon[]): MonthRibbon[] {
 
   return months.map((month) => {
     const monthDays = byMonth.get(monthKey(month)) ?? [];
-
-    const segments = Array.from({ length: HOURS_PER_DAY }, (_, hour) => {
-      const start = new Date(month.getFullYear(), month.getMonth(), 1, hour);
-      const end = new Date(month.getFullYear(), month.getMonth(), 1, hour + 1);
-
-      let sum = 0;
-      let counted = 0;
-      let logCount = 0;
-      for (const day of monthDays) {
-        const segment = day.segments[hour];
-        if (!segment) continue;
-        logCount += segment.logCount;
-        const availability = hourAvailability(segment);
-        if (availability !== null) {
-          sum += availability;
-          counted += 1;
-        }
-      }
-
-      if (counted === 0) {
-        return slicedSegment(start, end, [{ state: "no-data", fraction: 1 }], logCount);
-      }
-
-      const onShare = sum / counted;
-      const slices: SegmentSlice[] = [
-        { state: "on", fraction: onShare },
-        { state: "off", fraction: 1 - onShare },
-      ];
-      return slicedSegment(
-        start,
-        end,
-        slices.filter((slice) => slice.fraction > 0),
-        logCount,
-      );
-    });
-
-    return { month, label: formatMonthName(month), segments };
+    return {
+      month,
+      label: formatMonthName(month),
+      segments: foldHourly(
+        monthDays.map((day) => day.segments),
+        month,
+      ),
+    };
   });
 }
