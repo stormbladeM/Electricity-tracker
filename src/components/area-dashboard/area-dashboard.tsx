@@ -12,6 +12,7 @@ import {
 import { ChartEntry } from "@/components/personal-dashboard/chart-entry";
 import { StatTile, StatTileSkeleton } from "@/components/personal-dashboard/stat-tile";
 import { RibbonLegend } from "@/components/supply-ribbon/ribbon-legend";
+import { MeterIcon, TransformerIcon } from "@/components/icons";
 import { AREA_PERIOD_PHRASES, type AreaPeriod } from "./area-period";
 import { AreaPeriodSelector } from "./area-period-selector";
 import { AreaRibbonGrid, AreaRibbonGridSkeleton } from "./area-ribbon-grid";
@@ -134,6 +135,13 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
         <p className="text-14 text-text-muted">
           Power supply {phrase}, across every contributor.
         </p>
+        {resolved.data?.disco && (
+          <p className="flex items-center gap-1.5 text-14 text-text-muted">
+            <TransformerIcon size={16} className="shrink-0 text-text-muted" />
+            {resolved.data.disco.name}
+            {resolved.data.disco.shortName ? ` (${resolved.data.disco.shortName})` : ""}
+          </p>
+        )}
       </header>
 
       {resolved.data && (
@@ -159,7 +167,10 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
         ) : (
           <div className="flex flex-col gap-4 rounded border border-hairline bg-surface p-4">
             <div className="flex flex-col gap-1">
-              <p className="text-12 text-text-muted">Uptime {phrase}</p>
+              <p className="flex items-center gap-1.5 text-12 text-text-muted">
+                <MeterIcon size={14} className="shrink-0" />
+                Uptime {phrase}
+              </p>
               <MeterReadout percent={stats ? stats.uptimePercent : null} />
               {resolved.data?.kind === "state" && coverage.areaCount > 0 && (
                 <p className="text-12 text-text-muted">
