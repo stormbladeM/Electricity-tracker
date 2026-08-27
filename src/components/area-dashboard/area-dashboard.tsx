@@ -142,6 +142,14 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
             {resolved.data.disco.shortName ? ` (${resolved.data.disco.shortName})` : ""}
           </p>
         )}
+        {resolved.data?.stateSlug && resolved.data?.lgaSlug && (
+          <Link
+            href={`/state/${resolved.data.stateSlug}/lga/${resolved.data.lgaSlug}`}
+            className="w-fit rounded text-14 text-primary-text underline underline-offset-4"
+          >
+            Public page for {resolved.data.lgaName}
+          </Link>
+        )}
       </header>
 
       {resolved.data && (

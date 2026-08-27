@@ -12,7 +12,7 @@ type, index, function, trigger or policy; it only inserts rows into tables
 
 Every file is guarded (`ON CONFLICT` / `WHERE NOT EXISTS`) against the unique
 constraints already on these tables, so re-running a file is safe and won't
-duplicate rows. Apply in order: `001` → `002` → `003`.
+duplicate rows. Apply in order: `001` → `002` → `003` → `004`.
 
 ## Files
 
@@ -85,6 +85,17 @@ Verified against the live project after applying: 434 logs across 42 users
 (10 LGAs), 0 consecutive same-status logs for any user+area pair, 0 logs
 timestamped in the future, and every synthetic user's `profiles` row has
 `state_id`/`lga_id` set to match the LGA they contribute logs for.
+
+### `004_discos.sql`
+Fills `public.discos` with the eleven successor DisCos from the 2013 PHCN
+privatisation, then sets `areas.disco_id` for every area by the state its LGA
+sits in (CLAUDE.md decision 5: DisCo is added in M4). Two DisCos split Lagos
+by LGA in reality; every Lagos LGA is mapped to Ikeja Electric here as a
+documented simplification until areas carry a per-area override. `004a` is
+`ON CONFLICT (name) DO NOTHING`; `004b` only writes areas whose `disco_id`
+would actually change.
+
+Verified after applying: 11 discos, all 774 areas assigned.
 
 ## Regenerating
 
