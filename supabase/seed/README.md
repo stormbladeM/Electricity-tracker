@@ -12,7 +12,7 @@ type, index, function, trigger or policy; it only inserts rows into tables
 
 Every file is guarded (`ON CONFLICT` / `WHERE NOT EXISTS`) against the unique
 constraints already on these tables, so re-running a file is safe and won't
-duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005` → `006`.
+duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005` → `006` → `007`.
 
 ## Files
 
@@ -142,6 +142,34 @@ timestamp match: a re-run inserts nothing.
 
 Verified after applying: the detector flags 16 logs across all four rules, and
 a second run flags none.
+
+### `007_demo_admin_actions.sql`
+A handful of genuine moderation decisions, so the M6 audit log is not empty on
+a fresh demo. `admin_audit_log` only fills as somebody works the panel, so it
+opens blank — the same "looks broken" problem decision 6 covers.
+
+The obvious fix would be to insert plausible audit rows directly, and that is
+the one thing this file must not do: a trail describing decisions nobody made,
+on objects whose state does not match, is worse than an empty one. So it
+*performs* the decisions through the same functions the panel calls, and the
+audit rows are the real record of them — the state and the trail agree because
+the trail was written by the work.
+
+It rejects seed `006`'s Ikeja flapping cluster, **keeps** the Port Harcourt
+consensus outlier (a moderator judging that the street really was split is the
+point of a human queue; a demo where every flag is upheld would suggest the
+detector is never wrong), and acknowledges one Ikeja low-voltage fault with a
+note.
+
+Needs an admin: it acts as the earliest `profiles` row with `role = 'admin'`,
+because `auth.uid()` is null under the service role and every one of these
+functions refuses an anonymous caller. With no admin it raises a notice and
+does nothing. Each action is skipped when `admin_audit_log` already has a row
+for that target, so a re-run writes nothing.
+
+Verified after applying: 6 audit rows, 5 logs reviewed, the kept outlier
+unflagged, the queue down to 11, and a re-run of the detector re-flags none of
+the reviewed logs.
 
 ## Regenerating
 

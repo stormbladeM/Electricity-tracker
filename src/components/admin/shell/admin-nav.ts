@@ -13,6 +13,8 @@
 import {
   LayoutDashboard,
   Map,
+  MapPinned,
+  ScrollText,
   ShieldCheck,
   TriangleAlert,
   type LucideIcon,
@@ -51,6 +53,19 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     label: "Coverage",
     blurb: "Which LGAs have enough reporting to be trusted, and which are silent.",
     icon: Map,
+  },
+  {
+    href: "/admin/locations",
+    label: "Locations",
+    blurb: "States, LGAs, areas and DisCos — the reference data everything is filed against.",
+    icon: MapPinned,
+    adminOnly: true,
+  },
+  {
+    href: "/admin/audit",
+    label: "Audit log",
+    blurb: "Every moderator and admin action, append-only.",
+    icon: ScrollText,
   },
 ];
 

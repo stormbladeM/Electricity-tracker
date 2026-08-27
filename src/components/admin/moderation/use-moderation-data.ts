@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
+import { useAdminRows } from "../ui/use-admin-rows";
 
 export type FlaggedLog =
   Database["public"]["Functions"]["admin_flagged_logs"]["Returns"][number];
@@ -44,52 +45,4 @@ export function useContributors(flaggedOnly: boolean) {
     }, [flaggedOnly]),
     "Couldn't load contributors. Check your connection and try again.",
   );
-}
-
-type RowsResult<Row> = { data: Row[] | null; error: { message: string } | null };
-
-/**
- * The cancellable-fetch shape the rest of the app uses, with the query passed
- * in — the two tabs differ only in which function they call and what to say
- * when it fails.
- */
-function useAdminRows<Row>(
-  query: () => Promise<RowsResult<Row>>,
-  errorMessage: string,
-) {
-  const [rows, setRows] = useState<Row[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function run() {
-      await Promise.resolve();
-      if (cancelled) return;
-
-      setIsLoading(true);
-      setError(null);
-
-      const { data, error: queryError } = await query();
-      if (cancelled) return;
-
-      if (queryError) {
-        setError(errorMessage);
-      } else {
-        setRows(data ?? []);
-      }
-      setIsLoading(false);
-    }
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [query, errorMessage, refreshToken]);
-
-  const refetch = useCallback(() => setRefreshToken((token) => token + 1), []);
-
-  return { rows, isLoading, error, refetch };
 }

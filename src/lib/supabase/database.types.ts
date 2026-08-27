@@ -468,6 +468,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_audit_feed: {
+        Args: { p_action_prefix?: string; p_days?: number; p_limit?: number }
+        Returns: {
+          action: string
+          admin_id: string
+          admin_name: string
+          admin_role: Database["public"]["Enums"]["user_role"]
+          created_at: string
+          id: string
+          notes: string
+          target_id: string
+          target_type: string
+        }[]
+      }
       admin_contributors: {
         Args: { p_flagged_only?: boolean; p_limit?: number }
         Returns: {
@@ -539,6 +553,10 @@ export type Database = {
           state_name: string
         }[]
       }
+      admin_merge_areas: {
+        Args: { p_note?: string; p_source_id: string; p_target_id: string }
+        Returns: undefined
+      }
       admin_overview_stats: {
         Args: { p_days?: number }
         Returns: {
@@ -562,6 +580,33 @@ export type Database = {
           users_total: number
           window_days: number
         }[]
+      }
+      admin_save_area: {
+        Args: {
+          p_area_id?: string
+          p_disco_id?: string
+          p_lga_id?: string
+          p_name?: string
+          p_slug?: string
+        }
+        Returns: string
+      }
+      admin_save_disco: {
+        Args: { p_disco_id?: string; p_name?: string; p_short_name?: string }
+        Returns: string
+      }
+      admin_save_lga: {
+        Args: { p_lga_id?: string; p_name?: string; p_slug?: string; p_state_id?: string }
+        Returns: string
+      }
+      admin_save_state: {
+        Args: {
+          p_code?: string
+          p_name?: string
+          p_slug?: string
+          p_state_id?: string
+        }
+        Returns: string
       }
       current_user_role: {
         Args: never
