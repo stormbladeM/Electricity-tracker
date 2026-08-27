@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Download } from "lucide-react";
 import { AdminPageHeader } from "../ui/admin-page-header";
 import {
   AdminEmpty,
@@ -14,7 +13,7 @@ import {
 import { TabNav } from "../ui/tab-nav";
 import { WindowSelector } from "../ui/window-selector";
 import { accountLabel, formatExactStamp, formatStamp, shortId } from "../ui/admin-format";
-import { datedFilename, downloadCsv, toCsv } from "../ui/export-csv";
+import { ExportButton } from "../ui/export-button";
 import { adminWindowPhrase, type AdminWindow } from "../ui/admin-window";
 import {
   AUDIT_FILTERS,
@@ -46,25 +45,6 @@ const CSV_COLUMNS = [
 export function AuditView({ days, filter }: { days: AdminWindow; filter: AuditFilter }) {
   const { entries, isLoading, error } = useAuditFeed(days, filter);
 
-  function exportCsv() {
-    if (!entries) return;
-
-    const csv = toCsv(
-      CSV_COLUMNS,
-      entries.map((entry) => [
-        entry.created_at,
-        accountLabel(entry.admin_name, entry.admin_id ?? ""),
-        entry.admin_role,
-        entry.action,
-        entry.target_type,
-        entry.target_id,
-        entry.notes,
-      ]),
-    );
-
-    downloadCsv(datedFilename("audit-log"), csv);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <AdminPageHeader
@@ -84,15 +64,22 @@ export function AuditView({ days, filter }: { days: AdminWindow; filter: AuditFi
           }))}
         />
 
-        <button
-          type="button"
-          onClick={exportCsv}
+        <ExportButton
+          stem="audit-log"
+          columns={CSV_COLUMNS}
           disabled={!entries || entries.length === 0}
-          className="flex items-center gap-2 rounded border border-hairline px-3 py-1.5 text-14 text-text hover:border-text-muted disabled:opacity-50"
-        >
-          <Download aria-hidden="true" size={16} strokeWidth={1.5} />
-          Export CSV
-        </button>
+          rows={() =>
+            (entries ?? []).map((entry) => [
+              entry.created_at,
+              accountLabel(entry.admin_name, entry.admin_id ?? ""),
+              entry.admin_role,
+              entry.action,
+              entry.target_type,
+              entry.target_id,
+              entry.notes,
+            ])
+          }
+        />
       </div>
 
       {error ? (

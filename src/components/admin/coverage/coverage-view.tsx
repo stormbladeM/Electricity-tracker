@@ -5,12 +5,23 @@ import { GRADE_LABEL } from "@/components/area-dashboard/area-confidence";
 import { formatRelativeTime } from "@/lib/time/relative-time";
 import { AdminPageHeader } from "../ui/admin-page-header";
 import { AdminTable, AdminTableSkeleton, Td, Th, Tr } from "../ui/admin-table";
+import { ExportButton } from "../ui/export-button";
 import { MetricTile, MetricTileSkeleton } from "../ui/metric-tile";
 import { WindowSelector } from "../ui/window-selector";
 import { adminWindowPhrase, type AdminWindow } from "../ui/admin-window";
 import { CoverageBar, CoverageLegend, GradeDot } from "./coverage-bar";
 import type { StateCoverage } from "./coverage-grade";
 import { useCoverage } from "./use-coverage";
+
+const COVERAGE_COLUMNS = [
+  "state",
+  "lga",
+  "confidence",
+  "logs_in_window",
+  "contributors_in_window",
+  "faults_in_window",
+  "last_logged_at",
+] as const;
 
 /**
  * Where the data is thin — the screen that says where the next contributor is
@@ -40,7 +51,27 @@ export function CoverageView({ days }: { days: AdminWindow }) {
         title="Coverage"
         blurb={`Which LGAs have enough reporting to be trusted, over ${adminWindowPhrase(days)}.`}
       >
-        <WindowSelector days={days} />
+        <div className="flex items-center gap-2">
+          <ExportButton
+            stem="lga-coverage"
+            columns={COVERAGE_COLUMNS}
+            disabled={!states}
+            rows={() =>
+              (states ?? []).flatMap((state) =>
+                state.lgas.map((lga) => [
+                  state.stateName,
+                  lga.lga_name,
+                  GRADE_LABEL[lga.grade],
+                  lga.log_count,
+                  lga.contributor_count,
+                  lga.fault_count,
+                  lga.last_log_at,
+                ]),
+              )
+            }
+          />
+          <WindowSelector days={days} />
+        </div>
       </AdminPageHeader>
 
       {error ? (

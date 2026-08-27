@@ -10,8 +10,22 @@ import {
   Tr,
 } from "../ui/admin-table";
 import { accountLabel, formatExactStamp, formatStamp } from "../ui/admin-format";
+import { ExportButton } from "../ui/export-button";
 import { useModerationActions } from "./use-moderation-actions";
 import { useFlaggedLogs, type FlaggedLog } from "./use-moderation-data";
+
+const LOG_COLUMNS = [
+  "logged_at",
+  "status",
+  "power_source",
+  "lga",
+  "state",
+  "flag_reason",
+  "contributor",
+  "trust_score",
+  "contributor_flagged_logs",
+  "contributor_total_logs",
+] as const;
 
 /**
  * The queue: every flagged log nobody has decided on yet.
@@ -89,6 +103,27 @@ export function FlaggedLogQueue() {
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
+        <ExportButton
+          stem="flagged-logs"
+          columns={LOG_COLUMNS}
+          rows={() =>
+            rows.map((row) => [
+              row.logged_at,
+              row.status,
+              row.power_source,
+              row.lga_name,
+              row.state_name,
+              row.flag_reason,
+              accountLabel(row.display_name, row.user_id),
+              row.trust_score,
+              row.user_flagged_count,
+              row.user_log_count,
+            ])
+          }
+        />
+      </div>
+
       <BulkBar
         count={selected.size}
         note={note}

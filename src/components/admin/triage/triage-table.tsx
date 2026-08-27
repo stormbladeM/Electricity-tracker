@@ -15,9 +15,24 @@ import {
   Tr,
 } from "../ui/admin-table";
 import { formatExactStamp, formatStamp } from "../ui/admin-format";
+import { ExportButton } from "../ui/export-button";
 import { TriagePanel } from "./triage-panel";
 import { useTriageActions } from "./use-triage-actions";
 import { useTriageQueue } from "./use-triage-data";
+
+const FAULT_COLUMNS = [
+  "reported_at",
+  "type",
+  "severity",
+  "status",
+  "confirmations",
+  "lga",
+  "state",
+  "disco",
+  "resolved_at",
+  "description",
+  "resolution_note",
+] as const;
 
 /**
  * The triage queue: faults in one lifecycle group, worst first — severity,
@@ -77,6 +92,28 @@ export function TriageTable({
   return (
     <div className="flex flex-col gap-3">
       {saveError && <p className="text-14 text-fault">{saveError}</p>}
+
+      <div className="flex justify-end">
+        <ExportButton
+          stem="fault-queue"
+          columns={FAULT_COLUMNS}
+          rows={() =>
+            faults.map((fault) => [
+              fault.reported_at,
+              FAULT_TYPE_META[fault.fault_type].label,
+              fault.severity,
+              fault.status,
+              fault.confirm_count,
+              fault.lgas?.name ?? null,
+              fault.states?.name ?? null,
+              fault.discos?.short_name ?? fault.discos?.name ?? null,
+              fault.resolved_at,
+              fault.description,
+              fault.resolution_note,
+            ])
+          }
+        />
+      </div>
 
       <AdminTable
         caption="Fault reports waiting for triage"
