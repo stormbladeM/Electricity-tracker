@@ -84,6 +84,16 @@ function OverviewBands({ data, days }: { data: AdminOverviewData; days: AdminWin
           value={formatCount(stats.faults_untriaged)}
           tone={stats.faults_untriaged > 0 ? "fault" : "default"}
           hint="Reported, not yet acknowledged."
+          action={
+            stats.faults_untriaged > 0 ? (
+              <Link
+                href="/admin/faults"
+                className="text-12 text-primary-text hover:underline"
+              >
+                Open the triage queue
+              </Link>
+            ) : undefined
+          }
         />
         <MetricTile
           label="Open faults"

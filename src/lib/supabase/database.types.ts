@@ -486,6 +486,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_fault_metrics: {
+        Args: { p_days?: number }
+        Returns: {
+          avg_hours: number
+          dimension: string
+          label: string
+          median_hours: number
+          open_count: number
+          resolved_count: number
+        }[]
+      }
       admin_flagged_logs: {
         Args: { p_limit?: number }
         Returns: {
@@ -564,9 +575,21 @@ export type Database = {
           uptime_percent: number
         }[]
       }
+      merge_fault_reports: {
+        Args: { p_duplicate_id: string; p_note?: string; p_primary_id: string }
+        Returns: undefined
+      }
       review_power_logs: {
         Args: { p_keep: boolean; p_log_ids: string[]; p_note?: string }
         Returns: number
+      }
+      set_fault_status: {
+        Args: {
+          p_fault_id: string
+          p_note?: string
+          p_status: Database["public"]["Enums"]["fault_status"]
+        }
+        Returns: undefined
       }
       set_user_moderation: {
         Args: {
