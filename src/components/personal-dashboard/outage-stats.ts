@@ -12,7 +12,7 @@
  * Pure on purpose: the hook fetches, this decides.
  */
 import type { Tables } from "@/lib/supabase/database.types";
-import type { TimeWindow } from "./period";
+import type { DayWindow } from "@/lib/time/day-window";
 
 /** The two columns the maths needs. `ended_at` null means still off. */
 export type OutageInterval = Pick<Tables<"outage_intervals">, "started_at" | "ended_at">;
@@ -52,7 +52,7 @@ const MS_PER_MINUTE = 60_000;
  */
 export function computeOutageStats(
   intervals: OutageInterval[],
-  window: TimeWindow,
+  window: DayWindow,
   now: Date,
 ): OutageStats {
   const windowStart = window.start.getTime();

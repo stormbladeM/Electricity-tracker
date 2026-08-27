@@ -82,6 +82,12 @@ export function PersonalDashboard({ period }: { period: Period }) {
         </Link>
         <h1 className="font-display text-32 font-medium text-text">{areaName}</h1>
         <p className="text-14 text-text-muted">Your power history for this area.</p>
+        <Link
+          href="/area"
+          className="w-fit rounded text-14 text-primary-text underline underline-offset-4"
+        >
+          See {areaName} across all contributors
+        </Link>
       </header>
 
       <PeriodSelector period={period} />

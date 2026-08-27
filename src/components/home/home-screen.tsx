@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChartColumn } from "lucide-react";
+import { ChartColumn, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useProfile } from "@/lib/auth/use-profile";
 import { useLatestLog } from "@/lib/hooks/use-latest-log";
@@ -77,13 +77,22 @@ export function HomeScreen() {
         />
 
         {/* Lucide, unthemed: a chart icon stays a chart icon. */}
-        <Link
-          href="/dashboard"
-          className="flex w-fit items-center gap-2 rounded text-14 text-primary-text"
-        >
-          <ChartColumn aria-hidden="true" size={16} strokeWidth={1.5} />
-          Your dashboard
-        </Link>
+        <nav className="flex flex-col gap-3" aria-label="Dashboards">
+          <Link
+            href="/dashboard"
+            className="flex w-fit items-center gap-2 rounded text-14 text-primary-text"
+          >
+            <ChartColumn aria-hidden="true" size={16} strokeWidth={1.5} />
+            Your dashboard
+          </Link>
+          <Link
+            href="/area"
+            className="flex w-fit items-center gap-2 rounded text-14 text-primary-text"
+          >
+            <MapPin aria-hidden="true" size={16} strokeWidth={1.5} />
+            {lga?.name ? `${lga.name} dashboard` : "Area dashboard"}
+          </Link>
+        </nav>
       </div>
     </main>
   );
