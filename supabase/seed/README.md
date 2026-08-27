@@ -12,7 +12,7 @@ type, index, function, trigger or policy; it only inserts rows into tables
 
 Every file is guarded (`ON CONFLICT` / `WHERE NOT EXISTS`) against the unique
 constraints already on these tables, so re-running a file is safe and won't
-duplicate rows. Apply in order: `001` → `002` → `003` → `004`.
+duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005`.
 
 ## Files
 
@@ -96,6 +96,28 @@ documented simplification until areas carry a per-area override. `004a` is
 would actually change.
 
 Verified after applying: 11 discos, all 774 areas assigned.
+
+### `005_demo_faults.sql`
+~14 `fault_reports` across the same 10 LGAs `003` seeds power logs for, covering
+every `fault_type`, a spread of `severity`, and a mix of `status` (`reported`,
+`confirmed`, `acknowledged`, `in_progress`, two `resolved` with a
+`resolution_note`, one `rejected`). About half carry `latitude`/`longitude` near
+the LGA so the fault map has pins; the rest are feed-only. `disco_id` comes from
+the area (set by `004`). No `photo_url` — a SQL seed can't upload to the
+`fault-photos` bucket.
+
+Then `fault_confirmations`: N confirmers per fault, drawn from that LGA's demo
+contributors (lowest ids, never the reporter). The trigger from migration
+`0005_fault_confirmation_counts` recomputes `confirm_count` and auto-promotes any
+still-`reported` fault that reaches 3 confirmations to `confirmed`, so a few rows
+seeded as `reported` will read as `confirmed` afterwards — the intended demo
+state.
+
+Everything is resolved by join from `lgas` / `states` / `areas` and the demo
+`profiles` from `003b`; the only fixed ids are `md5()`-derived primary keys
+(`fault_reports.id = md5(<fault_key>)`, `fault_confirmations.id =
+md5(fault_id || user_id)`), which is what makes a re-run insert nothing.
+Requires migrations `0005` and `0006` to be applied first.
 
 ## Regenerating
 

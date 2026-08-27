@@ -10,6 +10,7 @@ import {
   formatSpokenDuration,
 } from "@/components/personal-dashboard/format-stats";
 import { ChartEntry } from "@/components/personal-dashboard/chart-entry";
+import { FaultsNearby } from "@/components/faults/faults-nearby";
 import { StatTile, StatTileSkeleton } from "@/components/personal-dashboard/stat-tile";
 import { RibbonLegend } from "@/components/supply-ribbon/ribbon-legend";
 import { MeterIcon, TransformerIcon } from "@/components/icons";
@@ -227,6 +228,8 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
           </div>
         )}
       </section>
+
+      <FaultsNearby lgaId={profile.lga_id} heading="Open faults here" />
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-18 font-medium text-text">

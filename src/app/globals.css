@@ -66,3 +66,31 @@ body {
   outline: 2px solid var(--color-primary-text);
   outline-offset: 2px;
 }
+
+/* Leaflet (fault map) — pull its light-mode chrome into the dark palette. */
+.leaflet-container {
+  background: var(--color-off);
+  font-family: var(--font-body);
+}
+.leaflet-container a {
+  color: var(--color-primary-text);
+}
+.leaflet-bar a,
+.leaflet-control-attribution {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border-color: var(--color-hairline);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-hairline);
+}
+.leaflet-popup-content .fault-popup a {
+  color: var(--color-primary-text);
+}
+.leaflet-container .fault-pin {
+  background: transparent;
+  border: none;
+}

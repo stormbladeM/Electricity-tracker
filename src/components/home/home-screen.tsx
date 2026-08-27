@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChartColumn, MapPin } from "lucide-react";
+import { ChartColumn, MapPin, TriangleAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useProfile } from "@/lib/auth/use-profile";
 import { useLatestLog } from "@/lib/hooks/use-latest-log";
 import { useLga } from "@/lib/hooks/use-lga";
 import { LogFlow } from "@/components/log-flow/log-flow";
+import { FaultsNearby } from "@/components/faults/faults-nearby";
 import { StatusCard } from "@/components/status-card/status-card";
 import { TodayRibbon } from "./today-ribbon";
 
@@ -76,6 +77,8 @@ export function HomeScreen() {
           onLogged={handleLogged}
         />
 
+        <FaultsNearby areaId={profile.area_id} />
+
         {/* Lucide, unthemed: a chart icon stays a chart icon. */}
         <nav className="flex flex-col gap-3" aria-label="Dashboards">
           <Link
@@ -91,6 +94,13 @@ export function HomeScreen() {
           >
             <MapPin aria-hidden="true" size={16} strokeWidth={1.5} />
             {lga?.name ? `${lga.name} dashboard` : "Area dashboard"}
+          </Link>
+          <Link
+            href="/faults"
+            className="flex w-fit items-center gap-2 rounded text-14 text-primary-text"
+          >
+            <TriangleAlert aria-hidden="true" size={16} strokeWidth={1.5} />
+            Faults
           </Link>
         </nav>
       </div>
