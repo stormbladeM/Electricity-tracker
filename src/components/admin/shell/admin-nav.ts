@@ -10,7 +10,7 @@
  * content; only admins edit the geographic reference data every log is
  * denormalized against.
  */
-import { LayoutDashboard, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, ShieldCheck, type LucideIcon } from "lucide-react";
 
 export type AdminNavItem = {
   href: string;
@@ -27,6 +27,12 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
     label: "Overview",
     blurb: "Platform health, growth and the current backlog.",
     icon: LayoutDashboard,
+  },
+  {
+    href: "/admin/moderation",
+    label: "Moderation",
+    blurb: "Logs the detector flagged, and the contributors behind them.",
+    icon: ShieldCheck,
   },
 ];
 

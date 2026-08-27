@@ -315,6 +315,8 @@ export type Database = {
           lga_id: string
           logged_at: string
           power_source: Database["public"]["Enums"]["power_source"] | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           source: Database["public"]["Enums"]["log_source"]
           state_id: string
           status: Database["public"]["Enums"]["power_status"]
@@ -329,6 +331,8 @@ export type Database = {
           lga_id: string
           logged_at?: string
           power_source?: Database["public"]["Enums"]["power_source"] | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           source?: Database["public"]["Enums"]["log_source"]
           state_id: string
           status: Database["public"]["Enums"]["power_status"]
@@ -343,6 +347,8 @@ export type Database = {
           lga_id?: string
           logged_at?: string
           power_source?: Database["public"]["Enums"]["power_source"] | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           source?: Database["public"]["Enums"]["log_source"]
           state_id?: string
           status?: Database["public"]["Enums"]["power_status"]
@@ -462,6 +468,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_contributors: {
+        Args: { p_flagged_only?: boolean; p_limit?: number }
+        Returns: {
+          display_name: string
+          fault_count: number
+          first_logged_at: string
+          flagged_count: number
+          is_banned: boolean
+          last_logged_at: string
+          lga_name: string
+          log_count: number
+          pending_flag_count: number
+          role: Database["public"]["Enums"]["user_role"]
+          state_name: string
+          trust_score: number
+          user_id: string
+        }[]
+      }
+      admin_flagged_logs: {
+        Args: { p_limit?: number }
+        Returns: {
+          display_name: string
+          flag_reason: string
+          id: string
+          is_banned: boolean
+          lga_name: string
+          logged_at: string
+          power_source: Database["public"]["Enums"]["power_source"]
+          state_name: string
+          status: Database["public"]["Enums"]["power_status"]
+          trust_score: number
+          user_flagged_count: number
+          user_id: string
+          user_log_count: number
+        }[]
+      }
       admin_growth_series: {
         Args: { p_days?: number }
         Returns: {
@@ -501,6 +543,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       derive_outage_intervals: { Args: never; Returns: number }
+      flag_suspect_power_logs: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       is_current_user_banned: { Args: never; Returns: boolean }
       is_moderator_or_admin: { Args: never; Returns: boolean }
@@ -520,6 +563,19 @@ export type Database = {
           state_slug: string
           uptime_percent: number
         }[]
+      }
+      review_power_logs: {
+        Args: { p_keep: boolean; p_log_ids: string[]; p_note?: string }
+        Returns: number
+      }
+      set_user_moderation: {
+        Args: {
+          p_is_banned?: boolean
+          p_note?: string
+          p_trust_score?: number
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

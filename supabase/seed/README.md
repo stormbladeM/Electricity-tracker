@@ -12,7 +12,7 @@ type, index, function, trigger or policy; it only inserts rows into tables
 
 Every file is guarded (`ON CONFLICT` / `WHERE NOT EXISTS`) against the unique
 constraints already on these tables, so re-running a file is safe and won't
-duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005`.
+duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005` → `006`.
 
 ## Files
 
@@ -118,6 +118,30 @@ Everything is resolved by join from `lgas` / `states` / `areas` and the demo
 (`fault_reports.id = md5(<fault_key>)`, `fault_confirmations.id =
 md5(fault_id || user_id)`), which is what makes a re-run insert nothing.
 Requires migrations `0005` and `0006` to be applied first.
+
+### `006_demo_flagged_logs.sql`
+Twenty-one deliberately suspect `power_logs` — one clear example of each thing
+migration `0008`'s detector looks for, so the M6 moderation queue has real work
+in it. The `003` demo logs were generated to be plausible, so the detector finds
+almost nothing in them and the queue would open empty, which is the failure
+CLAUDE.md decision 6 exists to prevent.
+
+One contributor in Ikeja flaps on/off/on/off inside six minutes; one in Kano
+Municipal posts twelve logs in forty-four minutes; three in Port Harcourt report
+an outage and a fourth reports power on ten minutes later; one in Ibadan North
+is timestamped three hours in the future. The three honest Port Harcourt logs
+are seeded on purpose — they are what the queue should be seen *not* flagging.
+
+Requires migration `0008`. After applying, either wait for the
+`flag-suspect-power-logs` cron job or run
+`select public.flag_suspect_power_logs();`. Contributors are resolved by
+position within each LGA (lowest profile id is rank 1) and staff accounts are
+excluded, so a demo admin never becomes the suspect. Timestamps are relative to
+`now()`, so re-runnability comes from `md5()`-derived primary keys rather than a
+timestamp match: a re-run inserts nothing.
+
+Verified after applying: the detector flags 16 logs across all four rules, and
+a second run flags none.
 
 ## Regenerating
 

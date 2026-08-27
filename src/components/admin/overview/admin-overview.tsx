@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { formatCompactDuration } from "@/components/personal-dashboard/format-stats";
 import { AdminPageHeader } from "../ui/admin-page-header";
 import { MetricTile, MetricTileSkeleton } from "../ui/metric-tile";
@@ -66,6 +67,16 @@ function OverviewBands({ data, days }: { data: AdminOverviewData; days: AdminWin
             stats.flagged_logs_open > 0
               ? "Held out of every public figure until reviewed."
               : "Nothing held back from the public figures."
+          }
+          action={
+            stats.flagged_logs_open > 0 ? (
+              <Link
+                href="/admin/moderation"
+                className="text-12 text-primary-text hover:underline"
+              >
+                Open the queue
+              </Link>
+            ) : undefined
           }
         />
         <MetricTile
