@@ -466,9 +466,27 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      derive_outage_intervals: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       is_current_user_banned: { Args: never; Returns: boolean }
       is_moderator_or_admin: { Args: never; Returns: boolean }
+      lga_uptime_ranking: {
+        Args: { p_days?: number }
+        Returns: {
+          area_count: number
+          contributor_count: number
+          lga_id: string
+          lga_name: string
+          lga_slug: string
+          log_count: number
+          off_minutes: number
+          outage_count: number
+          state_id: string
+          state_name: string
+          state_slug: string
+          uptime_percent: number
+        }[]
+      }
     }
     Enums: {
       fault_severity: "low" | "medium" | "high" | "critical"

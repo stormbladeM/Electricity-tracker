@@ -18,11 +18,15 @@ import { AreaRibbonGrid, AreaRibbonGridSkeleton } from "./area-ribbon-grid";
 import { ConfidenceBadge } from "./confidence-badge";
 import { hourOfDayRows } from "./hour-of-day";
 import { HourOfDayHeatmap, HourOfDayHeatmapSkeleton } from "./hour-of-day-heatmap";
+import { LgaComparison } from "./lga-comparison";
 import { MeterReadout, MeterReadoutSkeleton } from "./meter-readout";
+import { NationalRankingView } from "./national-ranking";
+import { buildNationalRanking, rowsForState } from "./ranking";
 import { ScopeSelector } from "./scope-selector";
 import { useAreaScope } from "./use-area-scope";
 import { useAreaStats } from "./use-area-stats";
 import { useAreaWindowLogs } from "./use-area-window-logs";
+import { useLgaRanking } from "./use-lga-ranking";
 import { monthlyAvailabilityRows } from "./year-ribbons";
 import type { Scope } from "./scope";
 
@@ -40,8 +44,10 @@ const RIBBON_HEADINGS: Record<AreaPeriod, string> = {
  *
  * It carries the seven-segment uptime readout, the graded confidence badge,
  * the longest-outage / outage-count stats, the ribbon at four scales (the
- * 30-day barcode and the 12-month average grid included) and the hour-of-day
- * heatmap. The LGA comparison and national ranking land in the next pass.
+ * 30-day barcode and the 12-month average grid included), the hour-of-day
+ * heatmap, the LGA comparison for the user's state, and the national
+ * ranking. The comparison and ranking read the `lga_uptime_ranking` Postgres
+ * function so it is one round trip, not one per LGA.
  */
 export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Scope }) {
   const { isLoading: isAuthLoading } = useAuth();
@@ -67,6 +73,16 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
   const weekdayRows = useMemo(
     () => (heatmap.data ? hourOfDayRows(heatmap.data.days) : []),
     [heatmap.data],
+  );
+
+  const ranking = useLgaRanking(period);
+  const stateRows = useMemo(
+    () => rowsForState(ranking.rows ?? [], profile?.state_id ?? null),
+    [ranking.rows, profile?.state_id],
+  );
+  const nationalRanking = useMemo(
+    () => buildNationalRanking(ranking.rows ?? [], profile?.lga_id ?? null),
+    [ranking.rows, profile?.lga_id],
   );
 
   const isAccountLoading = isAuthLoading || isProfileLoading;
@@ -251,6 +267,50 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
         </div>
       </section>
 
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-18 font-medium text-text">
+          {resolved.data ? `How ${resolved.data.stateName} compares` : "How your state compares"}
+        </h2>
+        <p className="text-14 text-text-muted">
+          Uptime by LGA {phrase}, most reliable first.
+        </p>
+
+        <div className="rounded border border-hairline bg-surface p-4">
+          {ranking.error ? (
+            <p className="text-14 text-fault">{ranking.error}</p>
+          ) : ranking.isLoading || !ranking.rows ? (
+            <RankingSkeleton />
+          ) : (
+            <ChartEntry key={period}>
+              <LgaComparison
+                rows={stateRows}
+                myLgaId={profile.lga_id}
+                stateName={resolved.data?.stateName ?? "your state"}
+              />
+            </ChartEntry>
+          )}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-18 font-medium text-text">National ranking</h2>
+        <p className="text-14 text-text-muted">
+          Best and least-served LGAs {phrase}, among those with enough reports to rank.
+        </p>
+
+        <div className="rounded border border-hairline bg-surface p-4">
+          {ranking.error ? (
+            <p className="text-14 text-fault">{ranking.error}</p>
+          ) : ranking.isLoading || !ranking.rows ? (
+            <RankingSkeleton rows={6} />
+          ) : (
+            <ChartEntry key={period}>
+              <NationalRankingView ranking={nationalRanking} myLgaId={profile.lga_id} />
+            </ChartEntry>
+          )}
+        </div>
+      </section>
+
       <p className="text-12 text-text-muted">
         Outage history rebuilds a few minutes after each log.
       </p>
@@ -278,6 +338,19 @@ function HeroSkeleton() {
         <MeterReadoutSkeleton />
       </div>
       <div className="h-3 w-40 animate-pulse rounded bg-hairline" />
+    </div>
+  );
+}
+
+function RankingSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <div className="flex flex-col gap-3" aria-busy="true">
+      {Array.from({ length: rows }, (_, index) => (
+        <div key={index} className="flex flex-col gap-1.5">
+          <div className="h-3 w-32 animate-pulse rounded bg-hairline" />
+          <div className="h-2 w-full animate-pulse rounded-full bg-hairline" />
+        </div>
+      ))}
     </div>
   );
 }
