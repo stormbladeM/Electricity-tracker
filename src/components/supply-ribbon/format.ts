@@ -48,6 +48,16 @@ export function formatDate(date: Date): string {
   return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+/** Month name alone, e.g. "Aug" — the year-view row label. */
+export function formatMonthName(date: Date): string {
+  return MONTH_NAMES[date.getMonth()];
+}
+
+/** Month and year, e.g. "Aug 2026". */
+export function formatMonthLabel(date: Date): string {
+  return `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 export function formatLogCount(logCount: number): string {
   if (logCount === 0) return "No logs";
   return logCount === 1 ? "1 log" : `${logCount} logs`;

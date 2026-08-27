@@ -1,41 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useProfile } from "@/lib/auth/use-profile";
 import {
   formatCompactDuration,
   formatSpokenDuration,
-  formatUptime,
 } from "@/components/personal-dashboard/format-stats";
+import { ChartEntry } from "@/components/personal-dashboard/chart-entry";
 import { StatTile, StatTileSkeleton } from "@/components/personal-dashboard/stat-tile";
+import { RibbonLegend } from "@/components/supply-ribbon/ribbon-legend";
 import { AREA_PERIOD_PHRASES, type AreaPeriod } from "./area-period";
 import { AreaPeriodSelector } from "./area-period-selector";
+import { AreaRibbonGrid, AreaRibbonGridSkeleton } from "./area-ribbon-grid";
 import { ConfidenceBadge } from "./confidence-badge";
 import { MeterReadout, MeterReadoutSkeleton } from "./meter-readout";
 import { ScopeSelector } from "./scope-selector";
 import { useAreaScope } from "./use-area-scope";
 import { useAreaStats } from "./use-area-stats";
+import { useAreaWindowLogs } from "./use-area-window-logs";
+import { monthlyAvailabilityRows } from "./year-ribbons";
 import type { Scope } from "./scope";
+
+const RIBBON_HEADINGS: Record<AreaPeriod, string> = {
+  daily: "Today, hour by hour",
+  weekly: "The last 7 days",
+  monthly: "The last 30 days",
+  yearly: "Average day, month by month",
+};
 
 /**
  * The area dashboard (M4): aggregate power supply for the signed-in user's
  * LGA or their whole state, across every contributor — not just their own
  * logs, which is what the personal dashboard shows.
  *
- * This first pass is the shell: the seven-segment uptime readout, the graded
- * confidence badge, and the longest-outage / outage-count stats, at four
- * windows and two scopes. The month ribbon grid, the hour-of-day heatmap and
- * the LGA comparison land in the following passes.
+ * It carries the seven-segment uptime readout, the graded confidence badge,
+ * the longest-outage / outage-count stats, and the ribbon at four scales —
+ * the 30-day barcode and the 12-month average grid included. The hour-of-day
+ * heatmap and the LGA comparison land in the following passes.
  */
 export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Scope }) {
   const { isLoading: isAuthLoading } = useAuth();
   const { profile, isLoading: isProfileLoading } = useProfile();
 
   const resolved = useAreaScope(scope, profile?.state_id, profile?.lga_id);
-  const areaStats = useAreaStats(resolved.data?.areaIds ?? [], period);
+  const areaIds = resolved.data?.areaIds ?? [];
+  const areaStats = useAreaStats(areaIds, period);
+  const ribbon = useAreaWindowLogs(areaIds, period);
+
+  const months = useMemo(
+    () =>
+      period === "yearly" && ribbon.data
+        ? monthlyAvailabilityRows(ribbon.data.days)
+        : [],
+    [period, ribbon.data],
+  );
 
   const isAccountLoading = isAuthLoading || isProfileLoading;
   const phrase = AREA_PERIOD_PHRASES[period];
@@ -113,9 +134,6 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
             <div className="flex flex-col gap-1">
               <p className="text-12 text-text-muted">Uptime {phrase}</p>
               <MeterReadout percent={stats ? stats.uptimePercent : null} />
-              <p className="sr-only">
-                {stats ? `${formatUptime(stats.uptimePercent)} percent` : "not available"}
-              </p>
               {resolved.data?.kind === "state" && coverage.areaCount > 0 && (
                 <p className="text-12 text-text-muted">
                   Average across {coverage.areaCount}{" "}
@@ -162,6 +180,39 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
             <StatTile label="Outages" value={stats ? String(stats.outageCount) : "0"} />
           </div>
         )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-18 font-medium text-text">
+          {RIBBON_HEADINGS[period]}
+        </h2>
+
+        <div className="rounded border border-hairline bg-surface p-4">
+          {error || ribbon.error ? (
+            <p className="text-14 text-fault">{error ?? ribbon.error}</p>
+          ) : ribbon.isLoading || !ribbon.data ? (
+            <AreaRibbonGridSkeleton period={period} />
+          ) : (
+            <>
+              {ribbon.data.coverage.hasAnyKnowledge ? (
+                <ChartEntry key={period}>
+                  <AreaRibbonGrid
+                    period={period}
+                    days={ribbon.data.days}
+                    months={months}
+                    areaName={scopeName}
+                  />
+                </ChartEntry>
+              ) : (
+                <p className="text-14 text-text-muted">No logs in this window yet.</p>
+              )}
+
+              <div className="mt-4 border-t border-hairline pt-4">
+                <RibbonLegend compact />
+              </div>
+            </>
+          )}
+        </div>
       </section>
 
       <p className="text-12 text-text-muted">
