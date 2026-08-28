@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  /* Surfaces */
+  --color-base: #0a0c10;
+  --color-surface: #151a21;
+  --color-off: #1a2029;
+  --color-hairline: #2c3542;
+  --color-text: #e4e9f0;
+  --color-text-muted: #7c8899;
+
+  /* Signal colors — each has exactly one job. See docs/design-system.md */
+  --color-on: #3dff6e;
+  --color-primary: #1b6dff;
+  --color-primary-text: #5b93ff; /* use instead of --primary when it must carry body text */
+  --color-series-1: #00d9f5;
+  --color-series-2: #b14bff;
+  --color-warn: #ffe81f;
+  --color-fault: #ff3b4e;
+}
+
+@theme inline {
+  --color-base: var(--color-base);
+  --color-surface: var(--color-surface);
+  --color-off: var(--color-off);
+  --color-hairline: var(--color-hairline);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+
+  --color-on: var(--color-on);
+  --color-primary: var(--color-primary);
+  --color-primary-text: var(--color-primary-text);
+  --color-series-1: var(--color-series-1);
+  --color-series-2: var(--color-series-2);
+  --color-warn: var(--color-warn);
+  --color-fault: var(--color-fault);
+
+  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
+  --font-body: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-meter: var(--font-dseg7), var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Type scale: 32 / 24 / 18 / 16 / 14 / 12. Two weights only: 400 and 500. */
+  --text-32: 2rem;
+  --text-32--line-height: 2.375rem;
+  --text-24: 1.5rem;
+  --text-24--line-height: 1.875rem;
+  --text-18: 1.125rem;
+  --text-18--line-height: 1.5rem;
+  --text-16: 1rem;
+  --text-16--line-height: 1.5rem;
+  --text-14: 0.875rem;
+  --text-14--line-height: 1.25rem;
+  --text-12: 0.75rem;
+  --text-12--line-height: 1rem;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+/* Visible focus ring on every interactive element — quality floor requirement. */
+:focus-visible {
+  outline: 2px solid var(--color-primary-text);
+  outline-offset: 2px;
+}
+
+/* Leaflet (fault map) — pull its light-mode chrome into the dark palette. */
+.leaflet-container {
+  background: var(--color-off);
+  font-family: var(--font-body);
+}
+.leaflet-container a {
+  color: var(--color-primary-text);
+}
+.leaflet-bar a,
+.leaflet-control-attribution {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border-color: var(--color-hairline);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-hairline);
+}
+.leaflet-popup-content .fault-popup a {
+  color: var(--color-primary-text);
+}
+.leaflet-container .fault-pin {
+  background: transparent;
+  border: none;
+}
