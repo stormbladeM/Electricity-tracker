@@ -2,7 +2,7 @@
 
 import { describeState, formatInterval, formatLogCount } from "./format";
 import { dominantState } from "./segment";
-import type { RibbonSegment } from "./types";
+import type { RibbonMode, RibbonSegment } from "./types";
 
 /** Keep the tooltip inside the ribbon's own width at 320px. */
 function anchor(centerPercent: number) {
@@ -13,6 +13,7 @@ function anchor(centerPercent: number) {
 
 type RibbonTooltipProps = {
   segment: RibbonSegment;
+  mode?: RibbonMode;
   /** Horizontal centre of the segment, as a percentage of the ribbon. */
   centerPercent: number;
 };
@@ -22,9 +23,22 @@ type RibbonTooltipProps = {
  * already reach assistive tech through each segment's aria-label, so this is
  * hidden from it rather than announced twice.
  */
-export function RibbonTooltip({ segment, centerPercent }: RibbonTooltipProps) {
+export function RibbonTooltip({
+  segment,
+  mode = "measured",
+  centerPercent,
+}: RibbonTooltipProps) {
   const isFlatNoData =
     segment.slices.length === 1 && dominantState(segment) === "no-data";
+
+  // A forecast has no logs of its own, so the log count is dropped and the
+  // segment's note — its interval and how many weeks it rests on — carries
+  // the confidence instead.
+  const summary = isFlatNoData
+    ? "No logs for this hour"
+    : mode === "forecast"
+      ? describeState(segment, mode)
+      : `${describeState(segment)} · ${formatLogCount(segment.logCount)}`;
 
   return (
     <div
@@ -33,11 +47,8 @@ export function RibbonTooltip({ segment, centerPercent }: RibbonTooltipProps) {
       style={anchor(centerPercent)}
     >
       <p className="font-mono text-12 text-text">{formatInterval(segment)}</p>
-      <p className="text-12 text-text-muted">
-        {isFlatNoData
-          ? "No logs for this hour"
-          : `${describeState(segment)} · ${formatLogCount(segment.logCount)}`}
-      </p>
+      <p className="text-12 text-text-muted">{summary}</p>
+      {segment.note && <p className="text-12 text-text-muted">{segment.note}</p>}
     </div>
   );
 }

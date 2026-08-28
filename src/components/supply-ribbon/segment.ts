@@ -6,8 +6,9 @@ export function flatSegment(
   end: Date,
   state: SegmentState,
   logCount = 0,
+  note?: string,
 ): RibbonSegment {
-  return { start, end, slices: [{ state, fraction: 1 }], logCount };
+  return { start, end, slices: [{ state, fraction: 1 }], logCount, note };
 }
 
 /** Build a segment from slices, normalising fractions so they sum to 1. */
@@ -16,13 +17,14 @@ export function slicedSegment(
   end: Date,
   slices: SegmentSlice[],
   logCount = 0,
+  note?: string,
 ): RibbonSegment {
   const total = slices.reduce((sum, slice) => sum + slice.fraction, 0);
   const normalised =
     total > 0
       ? slices.map((slice) => ({ ...slice, fraction: slice.fraction / total }))
       : [{ state: "no-data" as const, fraction: 1 }];
-  return { start, end, slices: normalised, logCount };
+  return { start, end, slices: normalised, logCount, note };
 }
 
 /**

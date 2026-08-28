@@ -7,7 +7,7 @@ import { RibbonSegmentView } from "./ribbon-segment";
 import { RibbonTooltip } from "./ribbon-tooltip";
 import { segmentKey } from "./segment";
 import { useRestorationSurge } from "./use-restoration-surge";
-import type { RibbonSegment } from "./types";
+import type { RibbonMode, RibbonSegment } from "./types";
 
 export type SupplyRibbonProps = {
   /** Ordered left to right. Any length: 24 for a day, 6 for a fault fragment. */
@@ -20,6 +20,12 @@ export type SupplyRibbonProps = {
   gap?: number;
   /** What shows through the gaps. Set it to the surface the ribbon sits on. */
   gapColor?: string;
+  /**
+   * Measurement or projection. A forecast lights in `--series-1` and describes
+   * itself in the conditional; see RibbonMode. Defaults to measurement, so
+   * every existing caller keeps the palette and wording it already had.
+   */
+  mode?: RibbonMode;
   className?: string;
 };
 
@@ -39,6 +45,7 @@ export function SupplyRibbon({
   height = 28,
   gap = 2,
   gapColor = "var(--color-base)",
+  mode = "measured",
   className,
 }: SupplyRibbonProps) {
   const instanceId = useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -47,8 +54,11 @@ export function SupplyRibbon({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tabStop, setTabStop] = useState(0);
 
+  // The restoration surge marks a circuit energising — something that
+  // actually happened. A forecast row changing shape is not a restoration, so
+  // it never surges however the numbers move.
   const prefersReducedMotion = useReducedMotion();
-  useRestorationSurge(svgRef, segments, !prefersReducedMotion);
+  useRestorationSurge(svgRef, segments, !prefersReducedMotion && mode === "measured");
 
   if (segments.length === 0) return null;
 
@@ -104,6 +114,7 @@ export function SupplyRibbon({
             index={index}
             cellWidth={cellWidth}
             patterns={patterns}
+            mode={mode}
             isTabStop={index === tabStop}
             onEnter={setActiveIndex}
             onLeave={(leaving) =>
@@ -131,6 +142,7 @@ export function SupplyRibbon({
       {activeSegment && (
         <RibbonTooltip
           segment={activeSegment}
+          mode={mode}
           centerPercent={(activeIndex! + 0.5) * cellWidth}
         />
       )}

@@ -18,6 +18,17 @@
 export type SegmentState = "on" | "off" | "no-data" | "unknown";
 
 /**
+ * Whether a ribbon shows what happened or what is expected to.
+ *
+ * The two are the same shape — a share of each hour with power — but they are
+ * not the same claim, so they must not look or read alike. A forecast ribbon
+ * lights in `--series-1`, the token reserved for forecasts, and its segments
+ * describe themselves as projections. Nothing else about the component
+ * changes: one ribbon, two registers.
+ */
+export type RibbonMode = "measured" | "forecast";
+
+/**
  * A run of one state inside a segment, left to right. This is what gives the
  * ribbon sub-hour precision: an hour where power came back at :24 is two
  * slices, not a rounded-off whole-hour verdict.
@@ -37,4 +48,10 @@ export type RibbonSegment = {
   slices: SegmentSlice[];
   /** Power logs backing this segment — shown in the tooltip as confidence. */
   logCount: number;
+  /**
+   * An extra line for the tooltip and the accessible summary — the forecast's
+   * interval and sample size ("68%–92% likely, from 4 weeks"). Optional
+   * because a measured segment has nothing to add beyond its own slices.
+   */
+  note?: string;
 };

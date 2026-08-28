@@ -1,5 +1,5 @@
 import { durationMinutes } from "./segment";
-import type { RibbonSegment, SegmentState } from "./types";
+import type { RibbonMode, RibbonSegment, SegmentState } from "./types";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = [
@@ -22,6 +22,32 @@ const STATE_WORDS: Record<SegmentState, string> = {
   off: "off",
   "no-data": "no logs",
   unknown: "not known yet",
+};
+
+/**
+ * The same states in the conditional. A forecast segment must never read as
+ * a record of what happened — "Power on" and "Power likely on" are different
+ * claims, and the ribbon says which one it is making.
+ */
+const FORECAST_STATE_WORDS: Record<SegmentState, string> = {
+  on: "likely on",
+  off: "likely off",
+  "no-data": "no history",
+  unknown: "not forecast",
+};
+
+const FLAT_MEASURED: Record<SegmentState, string> = {
+  on: "Power on",
+  off: "Power off",
+  "no-data": "No logs for this hour",
+  unknown: "Not known yet",
+};
+
+const FLAT_FORECAST: Record<SegmentState, string> = {
+  on: "Power likely on",
+  off: "Power likely off",
+  "no-data": "No history for this hour",
+  unknown: "Not enough history to forecast",
 };
 
 function pad(value: number): string {
@@ -69,32 +95,34 @@ export function formatLogCount(logCount: number): string {
  * Flat segments read "Power on" / "No logs for this hour". Mixed segments —
  * the sub-hour case — spell out the split: "24 min on, 36 min off".
  */
-export function describeState(segment: RibbonSegment): string {
+export function describeState(
+  segment: RibbonSegment,
+  mode: RibbonMode = "measured",
+): string {
+  const isForecast = mode === "forecast";
+
   if (segment.slices.length === 1) {
-    switch (segment.slices[0].state) {
-      case "on":
-        return "Power on";
-      case "off":
-        return "Power off";
-      case "no-data":
-        return "No logs for this hour";
-      case "unknown":
-        return "Not known yet";
-    }
+    return (isForecast ? FLAT_FORECAST : FLAT_MEASURED)[segment.slices[0].state];
   }
 
+  const words = isForecast ? FORECAST_STATE_WORDS : STATE_WORDS;
   const total = durationMinutes(segment);
   return segment.slices
-    .map(
-      (slice) =>
-        `${Math.round(slice.fraction * total)} min ${STATE_WORDS[slice.state]}`,
-    )
+    .map((slice) => `${Math.round(slice.fraction * total)} min ${words[slice.state]}`)
     .join(", ");
 }
 
-/** Accessible summary announced when a segment takes focus. */
-export function describeSegment(segment: RibbonSegment): string {
-  return `${formatInterval(segment)}. ${describeState(segment)}. ${formatLogCount(
-    segment.logCount,
-  )}.`;
+/**
+ * Accessible summary announced when a segment takes focus.
+ *
+ * A segment's own note takes the place of the log count where it has one: a
+ * forecast has no logs of its own, and "no logs" said about a prediction reads
+ * as a data gap rather than as the interval it actually is.
+ */
+export function describeSegment(
+  segment: RibbonSegment,
+  mode: RibbonMode = "measured",
+): string {
+  const detail = segment.note ?? formatLogCount(segment.logCount);
+  return `${formatInterval(segment)}. ${describeState(segment, mode)}. ${detail}.`;
 }

@@ -4,12 +4,22 @@ import type { KeyboardEvent } from "react";
 import type { RibbonPatternIds } from "./ribbon-defs";
 import { describeSegment } from "./format";
 import { segmentKey } from "./segment";
-import type { RibbonSegment, SegmentSlice, SegmentState } from "./types";
+import type { RibbonMode, RibbonSegment, SegmentSlice, SegmentState } from "./types";
 
-function fillFor(state: SegmentState, patterns: RibbonPatternIds): string {
+/**
+ * `--on` is reserved for power that was actually on, so a projection cannot
+ * borrow it; forecasts light in `--series-1`, the token that owns them. Off,
+ * no-data and unknown are unchanged — a dark hour reads the same either way,
+ * and the hatch already says "we can't tell you".
+ */
+function fillFor(
+  state: SegmentState,
+  patterns: RibbonPatternIds,
+  mode: RibbonMode,
+): string {
   switch (state) {
     case "on":
-      return "var(--color-on)";
+      return mode === "forecast" ? "var(--color-series-1)" : "var(--color-on)";
     case "off":
       return "var(--color-off)";
     case "no-data":
@@ -40,6 +50,7 @@ type RibbonSegmentViewProps = {
   /** Width of one segment cell as a percentage of the ribbon. */
   cellWidth: number;
   patterns: RibbonPatternIds;
+  mode: RibbonMode;
   /** Roving tabindex: one tab stop per ribbon, arrow keys move within it. */
   isTabStop: boolean;
   onEnter: (index: number) => void;
@@ -59,6 +70,7 @@ export function RibbonSegmentView({
   index,
   cellWidth,
   patterns,
+  mode,
   isTabStop,
   onEnter,
   onLeave,
@@ -80,7 +92,7 @@ export function RibbonSegmentView({
             y={0}
             width={percent(width)}
             height="100%"
-            fill={fillFor(slice.state, patterns)}
+            fill={fillFor(slice.state, patterns, mode)}
             data-slice-state={slice.state}
           />
         );
@@ -94,7 +106,7 @@ export function RibbonSegmentView({
         height="100%"
         fill="transparent"
         role="img"
-        aria-label={describeSegment(segment)}
+        aria-label={describeSegment(segment, mode)}
         tabIndex={isTabStop ? 0 : -1}
         onPointerEnter={() => onEnter(index)}
         onPointerLeave={() => onLeave(index)}

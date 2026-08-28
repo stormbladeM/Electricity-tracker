@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { formatCompactDuration } from "@/components/personal-dashboard/format-stats";
+import { AnomalyPanel } from "../anomalies/anomaly-panel";
 import { AdminPageHeader } from "../ui/admin-page-header";
 import { MetricTile, MetricTileSkeleton } from "../ui/metric-tile";
 import { WindowSelector } from "../ui/window-selector";
@@ -20,6 +21,13 @@ import { useAdminOverview, type AdminOverviewData } from "./use-admin-overview";
  * the platform's size and reliability; then growth over the window. Everything
  * is scoped by the window in the URL except the backlogs, which are always
  * "right now" (see migration 0007).
+ *
+ * M7's anomaly list sits directly under the backlog, because it belongs to
+ * the same question — what needs attention today — and because it is the only
+ * thing on this screen that can point at a specific place on a map. It runs on
+ * its own fixed windows rather than the URL's: "the last week against the four
+ * before it" is what makes a shift a shift, and letting the selector stretch
+ * it to a year would quietly turn the alert into a trend.
  */
 export function AdminOverview({ days }: { days: AdminWindow }) {
   const { data, isLoading, error, refetch } = useAdminOverview(days);
@@ -114,6 +122,8 @@ function OverviewBands({ data, days }: { data: AdminOverviewData; days: AdminWin
           }
         />
       </Band>
+
+      <AnomalyPanel />
 
       <Band title="Platform">
         <MetricTile

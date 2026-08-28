@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { dayWindow } from "@/lib/time/day-window";
 import {
   segmentsByDay,
   type DayRibbon,
   type LoggedPoint,
 } from "@/components/supply-ribbon/segments-from-logs";
-import { areaWindow, type AreaPeriod } from "./area-period";
+import { AREA_PERIOD_DAY_COUNT, type AreaPeriod } from "./area-period";
 import type { AreaCoverage } from "./area-confidence";
 
 export type AreaWindowLogs = {
@@ -17,8 +18,8 @@ export type AreaWindowLogs = {
 };
 
 /**
- * The window's raw logs for every in-scope area, turned into a stack of daily
- * ribbons and a coverage count.
+ * The last `dayCount` days of raw logs for every in-scope area, turned into a
+ * stack of daily ribbons and a coverage count.
  *
  * This is the M3 `useWindowLogs` widened from one area to a set. The logs are
  * pooled into one timeline before `segmentsByDay` runs: for an LGA scope —
@@ -29,8 +30,13 @@ export type AreaWindowLogs = {
  * Flagged logs are excluded to match the derivation job. The extra single-row
  * query carries in the status from before the window so day one starts known
  * rather than hatched.
+ *
+ * Takes a day count rather than a period because the M7 forecast trains on a
+ * span of its own (five weeks) that is not one of the dashboard's four
+ * windows. `useAreaWindowLogs` below is the period-shaped wrapper every
+ * dashboard surface uses.
  */
-export function useAreaWindowLogs(areaIds: string[], period: AreaPeriod) {
+export function useAreaDayLogs(areaIds: string[], dayCount: number) {
   const areaKey = areaIds.join(",");
   const [data, setData] = useState<AreaWindowLogs | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +60,7 @@ export function useAreaWindowLogs(areaIds: string[], period: AreaPeriod) {
       setError(null);
 
       const now = new Date();
-      const window = areaWindow(period, now);
+      const window = dayWindow(dayCount, now);
       const windowStart = window.start.toISOString();
       const supabase = createClient();
 
@@ -114,7 +120,12 @@ export function useAreaWindowLogs(areaIds: string[], period: AreaPeriod) {
     return () => {
       cancelled = true;
     };
-  }, [areaKey, period]);
+  }, [areaKey, dayCount]);
 
   return { data, isLoading, error };
+}
+
+/** The same fetch, for one of the dashboard's four named windows. */
+export function useAreaWindowLogs(areaIds: string[], period: AreaPeriod) {
+  return useAreaDayLogs(areaIds, AREA_PERIOD_DAY_COUNT[period]);
 }

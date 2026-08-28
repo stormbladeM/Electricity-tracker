@@ -13,11 +13,17 @@ import {
   HourOfDayHeatmapSkeleton,
 } from "@/components/area-dashboard/hour-of-day-heatmap";
 import { useAreaWindowLogs } from "@/components/area-dashboard/use-area-window-logs";
+import { ForecastPanel } from "@/components/forecast/forecast-panel";
 
 /**
- * The two charts on the public area page — the 30-day barcode and the
- * hour-of-day heatmap — as a client island. Both fold from a single 30-day
- * fetch, so the page stays one round trip once it hydrates.
+ * The charts on the public area page — the 30-day barcode, the hour-of-day
+ * heatmap, and the M7 forecast section — as a client island. The first two
+ * fold from a single 30-day fetch; the forecast reads its own five-week
+ * window (see useForecast) because a backtest needs days the model never saw.
+ *
+ * The forecast shows here as well as on the signed-in dashboard because this
+ * is the page that gets shared: "when is power usually on in this LGA, and
+ * what does next week look like" is the question a link arrives with.
  */
 export function PublicAreaCharts({
   areaIds,
@@ -83,6 +89,8 @@ export function PublicAreaCharts({
           )}
         </div>
       </section>
+
+      <ForecastPanel areaIds={areaIds} areaName={areaName} />
     </div>
   );
 }

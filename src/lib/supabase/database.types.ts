@@ -634,6 +634,25 @@ export type Database = {
           uptime_percent: number
         }[]
       }
+      lga_uptime_shift: {
+        Args: { p_baseline_days?: number; p_recent_days?: number }
+        Returns: {
+          baseline_contributor_count: number
+          baseline_log_count: number
+          baseline_uptime_percent: number
+          delta_percent: number
+          lga_id: string
+          lga_name: string
+          lga_slug: string
+          recent_contributor_count: number
+          recent_log_count: number
+          recent_outage_count: number
+          recent_uptime_percent: number
+          state_id: string
+          state_name: string
+          state_slug: string
+        }[]
+      }
       merge_fault_reports: {
         Args: { p_duplicate_id: string; p_note?: string; p_primary_id: string }
         Returns: undefined

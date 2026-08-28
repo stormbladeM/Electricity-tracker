@@ -11,6 +11,8 @@ import {
 } from "@/components/personal-dashboard/format-stats";
 import { ChartEntry } from "@/components/personal-dashboard/chart-entry";
 import { FaultsNearby } from "@/components/faults/faults-nearby";
+import { AnomalyBanner } from "@/components/forecast/anomaly-banner";
+import { ForecastPanel } from "@/components/forecast/forecast-panel";
 import { StatTile, StatTileSkeleton } from "@/components/personal-dashboard/stat-tile";
 import { RibbonLegend } from "@/components/supply-ribbon/ribbon-legend";
 import { MeterIcon, TransformerIcon } from "@/components/icons";
@@ -50,6 +52,11 @@ const RIBBON_HEADINGS: Record<AreaPeriod, string> = {
  * heatmap, the LGA comparison for the user's state, and the national
  * ranking. The comparison and ranking read the `lga_uptime_ranking` Postgres
  * function so it is one round trip, not one per LGA.
+ *
+ * M7 adds two forecasting surfaces on top of it: the anomaly banner near the
+ * top, where a sharp recent change is the most urgent thing on the screen,
+ * and the forecast section at the bottom, after every measured figure it is
+ * derived from. A projection should never be the first thing a reader meets.
  */
 export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Scope }) {
   const { isLoading: isAuthLoading } = useAuth();
@@ -229,6 +236,8 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
         )}
       </section>
 
+      <AnomalyBanner lgaId={profile.lga_id} areaName={scopeName} />
+
       <FaultsNearby lgaId={profile.lga_id} heading="Open faults here" />
 
       <section className="flex flex-col gap-3">
@@ -332,6 +341,8 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
           )}
         </div>
       </section>
+
+      <ForecastPanel areaIds={areaIds} areaName={scopeName} />
 
       <p className="text-12 text-text-muted">
         Outage history rebuilds a few minutes after each log.

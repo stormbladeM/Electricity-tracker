@@ -17,10 +17,17 @@ export type WeekdayRibbon = {
   segments: RibbonSegment[];
 };
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+/**
+ * Monday-first weekday labels and the index that goes with them.
+ *
+ * Exported because the forecast folds the same week: a pattern keyed on a
+ * different Monday to the heatmap's would put Tuesday's evenings under
+ * Wednesday's label, which is the kind of bug nobody sees until it ships.
+ */
+export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /** getDay() is Sunday-first; shift so Monday is index 0. */
-function weekdayIndex(date: Date): number {
+export function weekdayIndex(date: Date): number {
   return (date.getDay() + 6) % 7;
 }
 
