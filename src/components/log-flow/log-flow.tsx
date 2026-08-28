@@ -23,10 +23,10 @@ type LogFlowProps = {
 };
 
 /**
- * The log button plus the optional power-source tag. Failed submits keep the
- * picked source and show CLAUDE.md's exact error copy rather than losing the
- * user's input — a full offline sync queue is out of scope for this pass
- * (see the M2 report).
+ * The log button plus the optional power-source tag. A submit that can't reach
+ * the server is queued offline (useSubmitLog → the log queue) and the button
+ * still advances; a real rejection shows CLAUDE.md's error copy and keeps the
+ * picked source.
  *
  * The duplicate guard checks this user's own last report (useMyLatestStatus),
  * not the area's latest log — a second person confirming the same status is
@@ -35,7 +35,9 @@ type LogFlowProps = {
 export function LogFlow({ areaId, lgaId, stateId, latestLog, onLogged }: LogFlowProps) {
   const { user } = useAuth();
   const [powerSource, setPowerSource] = useState<PowerSource | null>(null);
-  const [message, setMessage] = useState<{ text: string; isDuplicate: boolean } | null>(null);
+  const [message, setMessage] = useState<{ text: string; tone: "muted" | "error" } | null>(
+    null,
+  );
   const { submit, isSubmitting } = useSubmitLog();
   const { status: myLatestStatus, markLogged } = useMyLatestStatus(areaId);
 
@@ -45,7 +47,7 @@ export function LogFlow({ areaId, lgaId, stateId, latestLog, onLogged }: LogFlow
     if (!user) {
       setMessage({
         text: "Not signed in yet. Check your connection and try again.",
-        isDuplicate: false,
+        tone: "error",
       });
       return;
     }
@@ -65,10 +67,18 @@ export function LogFlow({ areaId, lgaId, stateId, latestLog, onLogged }: LogFlow
       setPowerSource(null);
       markLogged(status);
       onLogged(status);
+      setMessage(
+        result.queued
+          ? { text: "Saved. It'll sync when you're back online.", tone: "muted" }
+          : null,
+      );
       return;
     }
 
-    setMessage({ text: result.message, isDuplicate: result.reason === "duplicate" });
+    setMessage({
+      text: result.message,
+      tone: result.reason === "duplicate" ? "muted" : "error",
+    });
   }
 
   return (
@@ -78,7 +88,7 @@ export function LogFlow({ areaId, lgaId, stateId, latestLog, onLogged }: LogFlow
       {message && (
         <p
           role="status"
-          className={`text-14 ${message.isDuplicate ? "text-text-muted" : "text-fault"}`}
+          className={`text-14 ${message.tone === "muted" ? "text-text-muted" : "text-fault"}`}
         >
           {message.text}
         </p>

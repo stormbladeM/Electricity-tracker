@@ -14,6 +14,7 @@ export function StateSelect({ value, onChange }: StateSelectProps) {
     <label className="flex flex-col gap-2">
       <span className="text-14 text-text-muted">State</span>
       <select
+        aria-label="State"
         className="rounded border border-hairline bg-surface px-3 py-2 text-16 text-text disabled:opacity-50"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}

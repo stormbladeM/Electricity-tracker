@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Archivo, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { AuthProvider } from "@/lib/auth/auth-provider";
+import { LogQueueProvider } from "@/lib/offline/log-queue";
+import { SyncStatusBanner } from "@/components/offline/sync-status-banner";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -37,6 +39,9 @@ const dseg7 = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  ),
   title: "Nigeria Electricity Tracker",
   description:
     "Crowdsourced tracking of electricity availability across Nigerian states and LGAs.",
@@ -49,7 +54,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${archivo.variable} ${plexSans.variable} ${plexMono.variable} ${dseg7.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
-        <AuthProvider>{children}</AuthProvider>
+        <a
+          href="#main"
+          className="sr-only rounded bg-primary px-4 py-2 text-14 font-medium text-text focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100]"
+        >
+          Skip to content
+        </a>
+        <AuthProvider>
+          <LogQueueProvider>
+            <div id="main" tabIndex={-1} className="flex flex-1 flex-col outline-none">
+              {children}
+            </div>
+            <SyncStatusBanner />
+          </LogQueueProvider>
+        </AuthProvider>
       </body>
     </html>
   );

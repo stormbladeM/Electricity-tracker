@@ -15,6 +15,7 @@ export function LgaSelect({ stateId, value, onChange }: LgaSelectProps) {
     <label className="flex flex-col gap-2">
       <span className="text-14 text-text-muted">LGA</span>
       <select
+        aria-label="LGA"
         className="rounded border border-hairline bg-surface px-3 py-2 text-16 text-text disabled:opacity-50"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}

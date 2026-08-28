@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { PreviewSection } from "@/app/dev/ribbon/preview-section";
 import { SupplyRibbon } from "@/components/supply-ribbon/supply-ribbon";
 import { FaultCard } from "@/components/faults/fault-card";
@@ -35,6 +36,9 @@ const fragment = outageWindowSegments({
 });
 
 export default function FaultsPreviewPage() {
+  // Component scaffolding — not part of the shipped app.
+  if (process.env.NODE_ENV === "production") notFound();
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
       <header className="flex flex-col gap-2">

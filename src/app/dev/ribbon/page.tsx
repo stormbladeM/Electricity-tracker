@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import {
   MOCK_NOW,
   mockAreaComparison,
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
 const GAP = "var(--color-surface)";
 
 export default function SupplyRibbonPreviewPage() {
+  // Component scaffolding — not part of the shipped app.
+  if (process.env.NODE_ENV === "production") notFound();
+
   const today = mockToday();
   const week = mockWeek();
   const month = mockMonth();
