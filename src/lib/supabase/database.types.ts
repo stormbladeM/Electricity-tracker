@@ -315,6 +315,8 @@ export type Database = {
           lga_id: string
           logged_at: string
           power_source: Database["public"]["Enums"]["power_source"] | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           source: Database["public"]["Enums"]["log_source"]
           state_id: string
           status: Database["public"]["Enums"]["power_status"]
@@ -329,6 +331,8 @@ export type Database = {
           lga_id: string
           logged_at?: string
           power_source?: Database["public"]["Enums"]["power_source"] | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           source?: Database["public"]["Enums"]["log_source"]
           state_id: string
           status: Database["public"]["Enums"]["power_status"]
@@ -343,6 +347,8 @@ export type Database = {
           lga_id?: string
           logged_at?: string
           power_source?: Database["public"]["Enums"]["power_source"] | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           source?: Database["public"]["Enums"]["log_source"]
           state_id?: string
           status?: Database["public"]["Enums"]["power_status"]
@@ -462,11 +468,152 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_audit_feed: {
+        Args: { p_action_prefix?: string; p_days?: number; p_limit?: number }
+        Returns: {
+          action: string
+          admin_id: string
+          admin_name: string
+          admin_role: Database["public"]["Enums"]["user_role"]
+          created_at: string
+          id: string
+          notes: string
+          target_id: string
+          target_type: string
+        }[]
+      }
+      admin_contributors: {
+        Args: { p_flagged_only?: boolean; p_limit?: number }
+        Returns: {
+          display_name: string
+          fault_count: number
+          first_logged_at: string
+          flagged_count: number
+          is_banned: boolean
+          last_logged_at: string
+          lga_name: string
+          log_count: number
+          pending_flag_count: number
+          role: Database["public"]["Enums"]["user_role"]
+          state_name: string
+          trust_score: number
+          user_id: string
+        }[]
+      }
+      admin_fault_metrics: {
+        Args: { p_days?: number }
+        Returns: {
+          avg_hours: number
+          dimension: string
+          label: string
+          median_hours: number
+          open_count: number
+          resolved_count: number
+        }[]
+      }
+      admin_flagged_logs: {
+        Args: { p_limit?: number }
+        Returns: {
+          display_name: string
+          flag_reason: string
+          id: string
+          is_banned: boolean
+          lga_name: string
+          logged_at: string
+          power_source: Database["public"]["Enums"]["power_source"]
+          state_name: string
+          status: Database["public"]["Enums"]["power_status"]
+          trust_score: number
+          user_flagged_count: number
+          user_id: string
+          user_log_count: number
+        }[]
+      }
+      admin_growth_series: {
+        Args: { p_days?: number }
+        Returns: {
+          contributors: number
+          day: string
+          faults: number
+          logs: number
+          new_users: number
+        }[]
+      }
+      admin_lga_coverage: {
+        Args: { p_days?: number }
+        Returns: {
+          contributor_count: number
+          fault_count: number
+          last_log_at: string
+          lga_id: string
+          lga_name: string
+          lga_slug: string
+          log_count: number
+          state_id: string
+          state_name: string
+        }[]
+      }
+      admin_merge_areas: {
+        Args: { p_note?: string; p_source_id: string; p_target_id: string }
+        Returns: undefined
+      }
+      admin_overview_stats: {
+        Args: { p_days?: number }
+        Returns: {
+          audit_actions_window: number
+          banned_users: number
+          contributors_total: number
+          contributors_window: number
+          faults_open: number
+          faults_resolved_window: number
+          faults_untriaged: number
+          faults_window: number
+          flagged_logs_open: number
+          lgas_total: number
+          lgas_tracked: number
+          logs_prev_window: number
+          logs_total: number
+          logs_window: number
+          median_resolution_hours: number
+          national_uptime_percent: number
+          new_users_window: number
+          users_total: number
+          window_days: number
+        }[]
+      }
+      admin_save_area: {
+        Args: {
+          p_area_id?: string
+          p_disco_id?: string
+          p_lga_id?: string
+          p_name?: string
+          p_slug?: string
+        }
+        Returns: string
+      }
+      admin_save_disco: {
+        Args: { p_disco_id?: string; p_name?: string; p_short_name?: string }
+        Returns: string
+      }
+      admin_save_lga: {
+        Args: { p_lga_id?: string; p_name?: string; p_slug?: string; p_state_id?: string }
+        Returns: string
+      }
+      admin_save_state: {
+        Args: {
+          p_code?: string
+          p_name?: string
+          p_slug?: string
+          p_state_id?: string
+        }
+        Returns: string
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
       derive_outage_intervals: { Args: never; Returns: number }
+      flag_suspect_power_logs: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       is_current_user_banned: { Args: never; Returns: boolean }
       is_moderator_or_admin: { Args: never; Returns: boolean }
@@ -486,6 +633,31 @@ export type Database = {
           state_slug: string
           uptime_percent: number
         }[]
+      }
+      merge_fault_reports: {
+        Args: { p_duplicate_id: string; p_note?: string; p_primary_id: string }
+        Returns: undefined
+      }
+      review_power_logs: {
+        Args: { p_keep: boolean; p_log_ids: string[]; p_note?: string }
+        Returns: number
+      }
+      set_fault_status: {
+        Args: {
+          p_fault_id: string
+          p_note?: string
+          p_status: Database["public"]["Enums"]["fault_status"]
+        }
+        Returns: undefined
+      }
+      set_user_moderation: {
+        Args: {
+          p_is_banned?: boolean
+          p_note?: string
+          p_trust_score?: number
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
