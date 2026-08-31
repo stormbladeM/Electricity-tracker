@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChartColumn, LayoutDashboard, MapPin, TriangleAlert } from "lucide-react";
+import { ChartColumn, LayoutDashboard, MapPin, TriangleAlert, UserRound } from "lucide-react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { useProfile } from "@/lib/auth/use-profile";
 import { useLatestLog } from "@/lib/hooks/use-latest-log";
@@ -18,7 +18,7 @@ import { TodayRibbon } from "./today-ribbon";
  * onboarding rather than crashing when the user hasn't picked an area yet.
  */
 export function HomeScreen() {
-  const { isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { profile, isLoading: isProfileLoading } = useProfile();
   const { lga } = useLga(profile?.lga_id);
   const { latestLog, isLoading: isLogLoading, refetch: refetchLatestLog } = useLatestLog(
@@ -102,6 +102,13 @@ export function HomeScreen() {
             <TriangleAlert aria-hidden="true" size={16} strokeWidth={1.5} />
             Faults
           </Link>
+          <Link
+            href="/account"
+            className="flex w-fit items-center gap-2 rounded text-14 text-primary-text"
+          >
+            <UserRound aria-hidden="true" size={16} strokeWidth={1.5} />
+            Your account
+          </Link>
           {/* Only staff see the way in — a contributor who found /admin would
               only meet the "not for you" page. */}
           {profile.role !== "user" && (
@@ -114,6 +121,19 @@ export function HomeScreen() {
             </Link>
           )}
         </nav>
+
+        {/* One quiet line, not a modal. Someone logging during an outage should
+            not be interrupted to think about accounts — but they should know
+            this one lives only here. */}
+        {user?.is_anonymous && (
+          <p className="text-12 text-text-muted">
+            This account only exists in this browser.{" "}
+            <Link href="/account" className="rounded text-primary-text underline underline-offset-4">
+              Save it with Google
+            </Link>{" "}
+            to keep your history.
+          </p>
+        )}
       </div>
     </main>
   );

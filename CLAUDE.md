@@ -21,6 +21,7 @@ Built as a portfolio flagship. Quality of the dashboard and admin tooling matter
 
 1. **Store events, not durations.** `power_logs` holds discrete on/off timestamps. Durations are derived into `outage_intervals` by a scheduled job. Never store a duration directly.
 2. **Anonymous auth.** Supabase anonymous sign-in — no email, no password, no SMTP. Every device gets a real `user_id` so RLS and moderation work. Upgradeable to a full account later without losing history.
+   - *The upgrade path is built.* `linkIdentity({ provider: 'google' })` converts an anonymous user in place, keeping the same `user_id`, so no row moves. Google rather than a magic link because OAuth needs no SMTP and so keeps this decision's constraints intact. Staff access follows a verified email via `staff_allowlist` (migration `0016`), not a cookie, so admin is recoverable on any device. Anonymous sign-in is minted only on app routes — public area pages must not create accounts just for being read.
 3. **No auto-detection of power state.** Phone charging status cannot distinguish grid from generator, solar, inverter or power bank. Manual logging only.
 4. **Optional `power_source` tag** on logs: grid / generator / solar / inverter. Enables grid-only filtering and the "% on generator during outages" stat.
 5. **DisCo is added in M4**, not day one.

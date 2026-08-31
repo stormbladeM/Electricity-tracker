@@ -515,6 +515,27 @@ export type Database = {
           },
         ]
       }
+      staff_allowlist: {
+        Row: {
+          created_at: string
+          email: string
+          note: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          note?: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          note?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
       states: {
         Row: {
           code: string
@@ -688,6 +709,14 @@ export type Database = {
           p_state_id?: string
         }
         Returns: string
+      }
+      allowlisted_role_for: {
+        Args: { p_user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+      claim_staff_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
       }
       current_user_role: {
         Args: never
