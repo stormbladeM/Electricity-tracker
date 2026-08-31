@@ -6,19 +6,7 @@ import { TabNav } from "../ui/tab-nav";
 import { useAdminAccess } from "../shell/use-admin-access";
 import { DiscosPanel } from "./discos-panel";
 import { PlacesPanel } from "./places-panel";
-
-export const LOCATION_TABS = ["places", "discos"] as const;
-export type LocationTab = (typeof LOCATION_TABS)[number];
-
-const TAB_LABEL: Record<LocationTab, string> = {
-  places: "States, LGAs and areas",
-  discos: "DisCos",
-};
-
-export function parseLocationTab(value: string | string[] | undefined): LocationTab {
-  const candidate = Array.isArray(value) ? value[0] : value;
-  return LOCATION_TABS.find((tab) => tab === candidate) ?? "places";
-}
+import { LOCATION_TABS, LOCATION_TAB_LABEL, type LocationTab } from "./location-tab";
 
 /**
  * The reference data every log and fault is denormalized against.
@@ -68,7 +56,7 @@ export function LocationsView({ tab }: { tab: LocationTab }) {
         label="Location sections"
         tabs={LOCATION_TABS.map((option) => ({
           href: `/admin/locations?tab=${option}`,
-          label: TAB_LABEL[option],
+          label: LOCATION_TAB_LABEL[option],
           isActive: option === tab,
         }))}
       />

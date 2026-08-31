@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import {
-  LocationsView,
-  parseLocationTab,
-} from "@/components/admin/locations/locations-view";
+import { LocationsView } from "@/components/admin/locations/locations-view";
+import { parseLocationTab } from "@/components/admin/locations/location-tab";
 
 export const metadata: Metadata = {
   title: "Locations — Admin",
