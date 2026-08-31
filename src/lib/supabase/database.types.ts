@@ -235,6 +235,82 @@ export type Database = {
           },
         ]
       }
+      grid_events: {
+        Row: {
+          agreement: number
+          area_id: string
+          baseline_rate: number | null
+          computed_at: string
+          contributing_logs: number
+          created_at: string
+          detected_at: string
+          distinct_contributors: number
+          event_type: Database["public"]["Enums"]["grid_event_type"]
+          id: string
+          lga_id: string
+          method: Database["public"]["Enums"]["grid_event_method"]
+          occurred_at: string
+          state_id: string
+          window_seconds: number
+        }
+        Insert: {
+          agreement: number
+          area_id: string
+          baseline_rate?: number | null
+          computed_at?: string
+          contributing_logs: number
+          created_at?: string
+          detected_at?: string
+          distinct_contributors: number
+          event_type: Database["public"]["Enums"]["grid_event_type"]
+          id?: string
+          lga_id: string
+          method?: Database["public"]["Enums"]["grid_event_method"]
+          occurred_at: string
+          state_id: string
+          window_seconds: number
+        }
+        Update: {
+          agreement?: number
+          area_id?: string
+          baseline_rate?: number | null
+          computed_at?: string
+          contributing_logs?: number
+          created_at?: string
+          detected_at?: string
+          distinct_contributors?: number
+          event_type?: Database["public"]["Enums"]["grid_event_type"]
+          id?: string
+          lga_id?: string
+          method?: Database["public"]["Enums"]["grid_event_method"]
+          occurred_at?: string
+          state_id?: string
+          window_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grid_events_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grid_events_lga_id_fkey"
+            columns: ["lga_id"]
+            isOneToOne: false
+            referencedRelation: "lgas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grid_events_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "states"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lgas: {
         Row: {
           created_at: string
@@ -596,7 +672,12 @@ export type Database = {
         Returns: string
       }
       admin_save_lga: {
-        Args: { p_lga_id?: string; p_name?: string; p_slug?: string; p_state_id?: string }
+        Args: {
+          p_lga_id?: string
+          p_name?: string
+          p_slug?: string
+          p_state_id?: string
+        }
         Returns: string
       }
       admin_save_state: {
@@ -613,6 +694,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       derive_outage_intervals: { Args: never; Returns: number }
+      detect_grid_events: { Args: never; Returns: number }
       flag_suspect_power_logs: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       is_current_user_banned: { Args: never; Returns: boolean }
@@ -697,6 +779,8 @@ export type Database = {
         | "vandalism"
         | "billing"
         | "other"
+      grid_event_method: "log_sync"
+      grid_event_type: "restoration" | "outage"
       log_source: "manual" | "auto"
       power_source: "grid" | "generator" | "solar" | "inverter"
       power_status: "on" | "off"
@@ -847,6 +931,8 @@ export const Constants = {
         "billing",
         "other",
       ],
+      grid_event_method: ["log_sync"],
+      grid_event_type: ["restoration", "outage"],
       log_source: ["manual", "auto"],
       power_source: ["grid", "generator", "solar", "inverter"],
       power_status: ["on", "off"],

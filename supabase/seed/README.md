@@ -12,7 +12,7 @@ type, index, function, trigger or policy; it only inserts rows into tables
 
 Every file is guarded (`ON CONFLICT` / `WHERE NOT EXISTS`) against the unique
 constraints already on these tables, so re-running a file is safe and won't
-duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005` → `006` → `007`.
+duplicate rows. Apply in order: `001` → `002` → `003` → `004` → `005` → `006` → `007` → `008`.
 
 ## Files
 
@@ -170,6 +170,30 @@ for that target, so a re-run writes nothing.
 Verified after applying: 6 audit rows, 5 logs reviewed, the kept outlier
 unflagged, the queue down to 11, and a re-run of the detector re-flags none of
 the reviewed logs.
+
+### `008_demo_grid_events.sql`
+Synchronized `power_logs` that `detect_grid_events()` (migration `0015`) resolves
+into demo `grid_events`, so the area dashboard's "Grid restored / area-wide
+outage" note has something to show. The `003` logs are generated per contributor
+independently, so no two land close enough to look like a grid event — the
+detector finds nothing in them, the same "looks broken" gap `006` fills for the
+moderation queue.
+
+Four clusters, each in an LGA `003` already seeds contributors for, timestamped
+relative to `now()` so they stay inside the detector's 48-hour window: Ikeja
+(restoration, 5 contributors within 4 minutes → grades *high*), Abuja Municipal
+(restoration, 4 within 9 minutes → *medium*), Kano Municipal (area-wide outage, 4
+within 6 minutes → *medium*), and Enugu North (restoration, 3 of 4 agreeing within
+9 minutes → *medium*). They are real `source = 'manual'` logs — they stand for
+real people noticing the grid flip — so `derive_outage_intervals` picks them up
+too. Re-runnable via `md5()`-derived primary keys (relative timestamps rule out a
+`logged_at` match), guarded by `ON CONFLICT (id) DO NOTHING`. Requires migration
+`0015`; the file ends with `select public.detect_grid_events();` so the events
+exist immediately.
+
+Verified after applying: 4 `grid_events` rows (1 outage, 3 restorations), a
+second detector run writes the same 4 and re-derives none, and the detector
+finds 0 events in the unsynchronized `003` data.
 
 ## Regenerating
 

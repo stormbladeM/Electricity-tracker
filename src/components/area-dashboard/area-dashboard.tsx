@@ -12,6 +12,7 @@ import {
 import { ChartEntry } from "@/components/personal-dashboard/chart-entry";
 import { FaultsNearby } from "@/components/faults/faults-nearby";
 import { AnomalyBanner } from "@/components/forecast/anomaly-banner";
+import { GridEventNote } from "@/components/grid-events/grid-event-note";
 import { ForecastPanel } from "@/components/forecast/forecast-panel";
 import { StatTile, StatTileSkeleton } from "@/components/personal-dashboard/stat-tile";
 import { RibbonLegend } from "@/components/supply-ribbon/ribbon-legend";
@@ -235,6 +236,8 @@ export function AreaDashboard({ period, scope }: { period: AreaPeriod; scope: Sc
           </div>
         )}
       </section>
+
+      <GridEventNote areaIds={areaIds} areaName={scopeName} />
 
       <AnomalyBanner lgaId={profile.lga_id} areaName={scopeName} />
 
